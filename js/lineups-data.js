@@ -14,12 +14,13 @@
    joueurs de gauche à droite, séparés par « | ».
    ========================================================= */
 
-const SAVED_LINEUPS_INFO = {
+let SAVED_LINEUPS_INFO = {
+  date: "08/11/2026",
   source: { titre: "ligue1.com – J10 : Les compositions probables (08/11/2026)", url: "https://ligue1.com/fr/articles/l1_article_5704-les-compositions-probables-ligue-1-2026-2027" },
   note: "Dernier onze probable connu de chaque équipe (10e journée, publié par la Ligue 1 le 08/11/2026). Les compositions de la 11e journée ne sont pas encore publiées : elles peuvent changer (blessures, suspensions, retours de sélection).",
 };
 
-const SAVED_LINEUPS_RAW = {
+let SAVED_LINEUPS_RAW = {
   TFC: { names: ["Toulouse"], formation: "4-2-3-1",
     lines: ["Restes", "Tapé | Nicolaisen | McKenzie | I. Diallo", "Casseres | Sigur", "Oppong | T. Jorgensen | Hidalgo", "Tengstedt"],
     absents: [["Donnum", "Suspendu"], ["Messali", "Absent"], ["Amougou", "Absent"], ["Odogu", "Absent"], ["A. Francis", "Absent"]] },

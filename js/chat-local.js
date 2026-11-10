@@ -14,44 +14,21 @@ const LocalBot = (() => {
   const name = id => team(id).name;
   const ordinal = n => (n === 1 ? "1er" : n + "e");
 
-  // Surnoms et abréviations reconnus pour chaque club
-  const EXTRA_ALIASES = {
-    PSG: ["psg", "paris sg", "paris saint germain", "parisiens", "paris"],
-    OM: ["om", "olympique de marseille", "marseillais", "marseille"],
-    OL: ["ol", "olympique lyonnais", "lyonnais", "lyon"],
-    LIL: ["losc", "lillois", "lille"],
-    ASM: ["asm", "monegasques", "monaco"],
-    RCL: ["rcl", "lensois", "sang et or", "lens"],
-    RCS: ["rcsa", "strasbourgeois", "strasbourg"],
-    SCO: ["sco", "angevins", "angers"],
-    NIC: ["ogcn", "nicois", "nice"],
-    REN: ["srfc", "rennais", "rennes"],
-    TFC: ["tfc", "toulousains", "toulouse", "tef"],
-    AJA: ["aja", "auxerrois", "auxerre"],
-    PFC: ["paris fc", "pfc"],
-    HAC: ["hac", "havrais", "le havre", "havre"],
-    EST: ["estac", "troyens", "troyes"],
-    LOR: ["fcl", "merlus", "lorientais", "lorient"],
-    LMF: ["le mans", "manceaux", "lmfc"],
-    BRE: ["sb29", "brestois", "brest"],
-  };
-
-  function aliasList() {
+  // Noms + surnoms de chaque club (définis dans js/leagues/*.js)
+  function aliasList(teams = TEAMS) {
     const list = [];
-    TEAMS.forEach(t => {
-      const known = SAVED_LINEUPS_RAW[t.id] ? t.id : Object.keys(EXTRA_ALIASES).find(k =>
-        EXTRA_ALIASES[k].some(a => norm(t.name).includes(a) && a.length > 3));
-      const aliases = new Set([norm(t.name), ...(EXTRA_ALIASES[t.id] || EXTRA_ALIASES[known] || [])]);
+    teams.forEach(t => {
+      const aliases = new Set([norm(t.name), ...(t.aliases || []).map(norm)]);
       aliases.forEach(a => list.push({ id: t.id, alias: a }));
     });
     return list.sort((a, b) => b.alias.length - a.alias.length); // les plus longs d'abord (« paris fc » avant « paris »)
   }
 
   // Trouve les équipes citées, dans l'ordre où elles apparaissent
-  function findTeams(text) {
+  function findTeams(text, teams = TEAMS) {
     let q = ` ${norm(text).replace(/[^a-z0-9 ]/g, " ")} `;
     const found = [];
-    for (const { id, alias } of aliasList()) {
+    for (const { id, alias } of aliasList(teams)) {
       const re = new RegExp(`\\s${alias.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s`);
       const m = q.match(re);
       if (m) {
@@ -94,14 +71,14 @@ const LocalBot = (() => {
       const label = i === 0 ? "Gardien" : i === n - 1 ? "Attaque" : i === 1 ? "Défense" : (n === 5 && i === 3) ? "Milieu offensif" : "Milieu";
       return `- ${label} : ${line.map(p => p.nom).join(", ")}`;
     }).join("\n");
-    return `Composition probable de **${name(id)}** (${l.schema_tactique}) :\n${lines}\n_Dernier onze probable connu (ligue1.com, 08/11), à confirmer._`;
+    return `Composition probable de **${name(id)}** (${l.schema_tactique}) :\n${lines}\n*Source : ${SAVED_LINEUPS_INFO.source.titre}, à confirmer.*`;
   }
 
   function absentsText(id) {
     const l = savedLineupFor(id, name(id));
     if (!l) return `Pas d'infos d'absences enregistrées pour ${name(id)}.`;
     if (!l.absents.length) return `Aucun absent signalé pour ${name(id)}.`;
-    return `Absents / incertains pour **${name(id)}** : ${l.absents.map(a => `${a.nom}${a.raison !== "Absent" ? ` (${a.raison.toLowerCase()})` : ""}`).join(", ")}.\n_Infos du 08/11, à vérifier avant le match._`;
+    return `Absents / incertains pour **${name(id)}** : ${l.absents.map(a => `${a.nom}${a.raison !== "Absent" ? ` (${a.raison.toLowerCase()})` : ""}`).join(", ")}.\n*Infos du ${SAVED_LINEUPS_INFO.date}, à vérifier avant le match.*`;
   }
 
   function analysisText(h, a, m) {
@@ -137,17 +114,18 @@ const LocalBot = (() => {
     }).join("\n");
   }
 
-  const HELP = "Je peux analyser les matchs de Ligue 1. Exemples :\n" +
+  const HELP = "Je peux analyser les matchs de Ligue 1, Premier League, Liga, Serie A et Bundesliga. Exemples :\n" +
     "- « Analyse Lille – Lyon »\n- « Qui va gagner Nice PSG ? »\n- « Compo probable de l'OM »\n" +
     "- « Absents du PSG »\n- « Y aura-t-il plus de 2,5 buts entre Lens et Toulouse ? »\n" +
     "- « Quel est le match le plus serré de la journée ? »\n- « Compare Rennes et Brest »\n- « Comment marche le pronostic ? »\n" +
-    "Et sur les joueurs :\n- « Combien de buts a marqué Sinayoko ? »\n- « Meilleurs passeurs »\n- « Compare Gouiri et Wahi »";
+    "Et sur les joueurs :\n- « Combien de buts a marqué Sinayoko ? »\n- « Meilleurs passeurs »\n- « Compare Gouiri et Wahi »\n" +
+    "Et dans les autres championnats :\n- « Qui va gagner Liverpool – Man United ? »\n- « Stats de Haaland »\n- « Classement de la Liga »";
 
   // ---------- Compréhension de la question ----------
   let lastTeams = []; // pour les questions de suite (« et les absents ? »)
   let lastSubject = null; // "player" ou "team"
 
-  function reply(question) {
+  function replyInLeague(question) {
     const q = norm(question);
     const has = re => re.test(q);
     let teams = findTeams(question);
@@ -165,8 +143,8 @@ const LocalBot = (() => {
     // Questions sur la méthode
     if (has(/(comment|explique).*(calcul|modele|pronostic|prono|marche|fonctionne)|poisson|methode/)) {
       return "Le pronostic du site utilise une **loi de Poisson**, un modèle classique en football :\n" +
-        "- On calcule la force offensive (buts marqués) et défensive (buts encaissés) de chaque équipe, comparées à la moyenne de la Ligue 1.\n" +
-        "- Comme il n'y a que 10 matchs joués, ces forces sont « lissées » vers la moyenne pour éviter les excès.\n" +
+        "- On calcule la force offensive (buts marqués) et défensive (buts encaissés) de chaque équipe, comparées à la moyenne du championnat.\n" +
+        "- Comme il n'y a qu'une dizaine de matchs joués, ces forces sont « lissées » vers la moyenne pour éviter les excès.\n" +
         "- On en déduit les buts attendus de chaque équipe (+12 % pour l'équipe à domicile), puis la probabilité de chaque score (0-0, 1-0, 2-1…).\n" +
         "- En additionnant les scores, on obtient victoire / nul / défaite, plus de 2,5 buts, etc.\n" +
         "_Limites : le modèle ne connaît pas les blessures, la forme récente ni la motivation._";
@@ -182,9 +160,14 @@ const LocalBot = (() => {
       if (has(/pire defense|encaisse le plus/)) { const t = [...Analysis.standings()].sort((a, b) => b.GA - a.GA)[0]; return `Défense la plus faible : **${t.name}** avec ${t.GA} buts encaissés.`; }
       if (has(/classement|leader|premier|podium|top|relegation|releg|dernier/)) {
         const tb = Analysis.standings();
-        return `Classement (après la ${DATA_INFO.updatedAfterDay || ""}e journée) :\n` +
+        return `Classement ${CURRENT_LEAGUE.name} (${DATA_INFO.live ? "en direct" : DATA_INFO.label}) :\n` +
           tb.slice(0, 5).map((t, i) => `- ${i + 1}. ${t.name} – ${t.pts} pts`).join("\n") +
           `\n…\n` + tb.slice(-3).map((t, i) => `- ${tb.length - 2 + i}. ${t.name} – ${t.pts} pts`).join("\n");
+      }
+      if (has(/meilleur buteur|buteurs?/) === false && has(/championnat|ligue|league|liga|serie|bundesliga/)) {
+        const k = Analysis.seasonKpis();
+        return `${CURRENT_LEAGUE.flag} **${CURRENT_LEAGUE.name}** : ${k.leader.name} en tête avec ${k.leader.pts} pts. ${k.goals} buts en ${k.matches} matchs (${k.goalsPerMatch} par match).\n` +
+          `Demande-moi le classement, les matchs de la journée, une analyse de match ou les stats d'un joueur.`;
       }
       if (has(/prochain|journee|programme|calendrier|match|week/)) {
         const day = Math.min(...UPCOMING.map(m => m.day));
@@ -237,9 +220,65 @@ const LocalBot = (() => {
     return analysisText(h, a, m);
   }
 
+  // ---------- Choix automatique du championnat ----------
+  const LEAGUE_KEYWORDS = [
+    ["L1", /ligue 1|championnat de france|\bl1\b/],
+    ["PL", /premier league|angleterre|anglais|\bpl\b|\bepl\b/],
+    ["LIGA", /\bliga\b|espagne|espagnol/],
+    ["SA", /serie a|italie|italien|calcio/],
+    ["BL", /bundesliga|allemagne|allemand/],
+  ];
+
+  function detectLeague(question) {
+    const q = norm(question);
+    const cur = CURRENT_LEAGUE.id;
+    const kw = LEAGUE_KEYWORDS.find(([, re]) => re.test(q));
+    if (kw) return kw[0];
+    if (findTeams(question).length) return cur;
+    for (const id of LEAGUE_ORDER) {
+      if (id !== cur && findTeams(question, LEAGUES[id].teams).length) return id;
+    }
+    if (PlayerBot.find(question).length) return cur;
+    for (const id of LEAGUE_ORDER) {
+      if (id === cur) continue;
+      setLeague(id);
+      const hit = PlayerBot.find(question).length > 0;
+      setLeague(cur);
+      if (hit) return id;
+    }
+    return cur;
+  }
+
+  function reply(question) {
+    const target = detectLeague(question);
+    let prefix = "";
+    if (target !== CURRENT_LEAGUE.id) {
+      switchLeague(target, { keepView: true }); // change aussi l'affichage du site
+      lastTeams = [];
+      lastSubject = null;
+      prefix = `*(Je passe sur ${LEAGUES[target].flag} ${LEAGUES[target].name}.)*\n\n`;
+    }
+    const answer = replyInLeague(question);
+    return prefix + answer + (lastSubject === "player" && !findTeams(question).length ? namesakesNote(question) : "");
+  }
+
+  // Signale un joueur du même nom dans un autre championnat (ex. Mbappé)
+  function namesakesNote(question) {
+    const cur = CURRENT_LEAGUE.id;
+    const others = [];
+    LEAGUE_ORDER.filter(id => id !== cur).forEach(id => {
+      setLeague(id);
+      PlayerBot.find(question).forEach(p => others.push(`${p.name} (${name(p.team)}, ${CURRENT_LEAGUE.name})`));
+      setLeague(cur);
+    });
+    return others.length
+      ? `\n\n*Il existe aussi : ${others.slice(0, 3).join(", ")}. Précise le club pour le voir, par ex. « ${question.trim().replace(/[?!.\s]+$/, "")} du ${others[0].split(" (")[1].split(",")[0]} ».*`
+      : "";
+  }
+
   // ---------- Contexte complet pour l'IA ----------
   function fullContext() {
-    const src = DATA_INFO.live ? `en direct, mises à jour le ${DATA_INFO.fetchedAt}` : `enregistrées, après la ${DATA_INFO.updatedAfterDay}e journée`;
+    const src = DATA_INFO.live ? `en direct, mises à jour le ${DATA_INFO.fetchedAt}` : `enregistrées, ${DATA_INFO.label}`;
     const table = Analysis.standings().map((t, i) =>
       `${i + 1}. ${t.name} – ${t.pts} pts (${t.P} J, ${t.W}V ${t.D}N ${t.L}D, buts ${t.GF}-${t.GA}, ${(t.GF / t.P).toFixed(2)} marqués/match, ${(t.GA / t.P).toFixed(2)} encaissés/match)`).join("\n");
     const matches = UPCOMING.slice(0, 18).map(m => {
@@ -253,9 +292,27 @@ const LocalBot = (() => {
         `  Modèle : ${P(p.home)} / nul ${P(p.draw)} / ${P(p.away)} ; buts attendus ${p.expectedGoals[0].toFixed(2)}-${p.expectedGoals[1].toFixed(2)} ; +2,5 buts ${P(p.over25)} ; les deux marquent ${P(p.btts)} ; scores probables ${p.topScores.slice(0, 3).map(s => s.score).join(", ")}\n` +
         `  Analyse du site :\n${ins}\n${lu(m.home)}\n${lu(m.away)}`;
     }).join("\n");
-    return `Ligue 1 ${DATA_INFO.season} (données ${src})\n\nCLASSEMENT\n${table}\n\nPROCHAINS MATCHS (avec analyse du site)\n${matches}\n\n` +
-      `Compositions : dernier onze probable connu publié par ligue1.com le 08/11/2026 (10e journée), à confirmer.\n\n` +
-      PlayerBot.context();
+    return `CHAMPIONNAT AFFICHÉ : ${CURRENT_LEAGUE.name} ${DATA_INFO.season} (données ${src})\n\nCLASSEMENT\n${table}\n\nPROCHAINS MATCHS (avec analyse du site)\n${matches}\n\n` +
+      `Compositions : ${SAVED_LINEUPS_INFO.source.titre} (${SAVED_LINEUPS_INFO.source.url}), à confirmer.\n\n` +
+      PlayerBot.context() + "\n\n" + otherLeaguesContext();
+  }
+
+  // Résumé des autres championnats (classement, matchs à venir, buteurs)
+  function otherLeaguesContext() {
+    const cur = CURRENT_LEAGUE.id;
+    const parts = LEAGUE_ORDER.filter(id => id !== cur).map(id => {
+      setLeague(id);
+      const table = Analysis.standings().map((t, i) => `${i + 1}. ${t.name} ${t.pts} pts (${t.P} J, ${t.GF}-${t.GA})`).join(" ; ");
+      const matches = UPCOMING.map(m => {
+        const p = Analysis.predict(m.home, m.away);
+        return `J${m.day} ${m.date} ${m.time} ${name(m.home)} – ${name(m.away)} (${P(p.home)}/${P(p.draw)}/${P(p.away)})`;
+      }).join(" ; ");
+      const scorers = PLAYERS.filter(p => p.goals != null).sort((a, b) => b.goals - a.goals).slice(0, 8)
+        .map(p => `${p.name} (${name(p.team)}) ${p.goals} buts${p.assists != null ? `, ${p.assists} passes` : ""}`).join(" ; ");
+      return `AUTRE CHAMPIONNAT : ${CURRENT_LEAGUE.name} (${DATA_INFO.live ? "en direct" : DATA_INFO.label})\nClassement : ${table}\nProchains matchs (modèle du site) : ${matches}\nMeilleurs buteurs : ${scorers}`;
+    });
+    setLeague(cur);
+    return parts.join("\n\n");
   }
 
   return { reply, fullContext, findTeams };

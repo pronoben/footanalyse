@@ -238,3 +238,15 @@ button:disabled { opacity: .6; cursor: wait; }
 .chat-suggestions button { flex: 0 0 auto; background: var(--card-2); color: var(--text); border: 1px solid #2a333d; border-radius: 14px; padding: 5px 10px; font-size: 0.78rem; cursor: pointer; }
 .chat-suggestions button:hover { border-color: var(--accent); }
 .msg.bot em { color: var(--muted); }
+
+/* ---------- Choix du championnat ---------- */
+.league-bar {
+  display: flex; gap: 8px; padding: 10px 28px; overflow-x: auto;
+  background: var(--bg); border-bottom: 1px solid #2a333d;
+}
+.league-btn {
+  flex: 0 0 auto; background: var(--card); color: var(--muted); border: 1px solid #2a333d;
+  border-radius: 20px; padding: 6px 14px; cursor: pointer; font-size: 0.9rem; white-space: nowrap;
+}
+.league-btn:hover { color: var(--text); border-color: var(--accent); }
+.league-btn.active { color: #062; background: var(--accent); border-color: var(--accent); font-weight: 700; }

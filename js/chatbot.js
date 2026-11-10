@@ -75,7 +75,7 @@ const Chatbot = (() => {
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
-      const err = new Error(data.error || `Erreur ${res.status}`);
+      const err = new Error(data.error || ([404, 405, 501].includes(res.status) ? "pas de serveur IA sur cet hébergement" : `Erreur ${res.status}`));
       err.status = res.status;
       throw err;
     }
@@ -107,7 +107,7 @@ const Chatbot = (() => {
     } catch (e) {
       typing.remove();
       // 503 = pas de clé / SDK non installé / site ouvert sans server.py : mode simple
-      if (e.status === 503 || e.status === 404 || e.status === 501 || !e.status) {
+      if ([404, 405, 501, 503].includes(e.status) || !e.status) {
         aiAvailable = false;
         const reply = localReply(text);
         history.push({ role: "assistant", content: reply });
@@ -135,6 +135,11 @@ const Chatbot = (() => {
     "Stats de Sinayoko",
     "Meilleurs passeurs",
     "Compare Gouiri et Wahi",
+    "Qui va gagner Liverpool – Man United ?",
+    "Stats de Haaland",
+    "Compo probable du Real Madrid",
+    "Classement de la Serie A",
+    "Meilleurs buteurs de Bundesliga",
   ];
   const sugBox = document.getElementById("chat-suggestions");
   SUGGESTIONS.forEach(text => {

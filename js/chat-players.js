@@ -33,9 +33,16 @@ const PlayerBot = (() => {
     const index = [];
     const add = (name, teamId, info) => {
       const p = nameParts(name);
-      let e = index.find(x => x.team === teamId && x.parts.last === p.last && (!x.parts.initial || !p.initial || x.parts.initial === p.initial));
+      // Même joueur si même club, même nom de famille et première lettre du prénom compatible
+      // (« Lautaro Martínez » ≠ « J. Martínez », mais « F. Torres » = « Ferran Torres »)
+      const first = q => q.initial || (q.full.includes(" ") ? q.full[0] : null);
+      let e = index.find(x => x.team === teamId && x.parts.last === p.last &&
+        (!first(x.parts) || !first(p) || first(x.parts) === first(p)));
       if (!e) { e = { name, team: teamId, parts: p }; index.push(e); }
-      Object.assign(e, info);
+      // On garde le nom le plus complet pour l'affichage
+      const { name: newName, ...rest } = info;
+      if (newName && newName.length > e.name.length) e.name = newName;
+      Object.assign(e, rest);
     };
     PLAYERS.forEach(s => add(s.name, s.team, { stats: s, name: s.name }));
     Object.entries(SAVED_LINEUPS_RAW).forEach(([tid, raw]) => {
@@ -59,10 +66,13 @@ const PlayerBot = (() => {
       const { full, last, initial } = e.parts;
       const fullHit = full.length >= 4 && full.includes(" ") && qNoDots.includes(` ${full} `);
       const lastHit = last.length >= 3 && qNoDots.includes(` ${last} `);
-      if (!fullHit && !lastHit) continue;
+      // Prénom seul (« Lautaro », « Raphinha ») quand le nom complet est connu
+      const firstName = !initial && full.includes(" ") ? full.split(" ")[0] : null;
+      const firstHit = firstName && firstName.length >= 5 && !STOP.has(firstName) && qNoDots.includes(` ${firstName} `);
+      if (!fullHit && !lastHit && !firstHit) continue;
       const initialHit = initial && new RegExp(` ${initial}\\.? ${last} `).test(q);
       if (!fullHit && !initialHit && STOP.has(last) && !teams.includes(e.team)) continue;
-      hits.push({ e, score: (fullHit ? 3 : 0) + (initialHit ? 2 : 0) + (teams.includes(e.team) ? 1 : 0) });
+      hits.push({ e, score: (fullHit ? 3 : 0) + (initialHit || firstHit ? 2 : 0) + (teams.includes(e.team) ? 1 : 0) });
     }
     // Pour un même nom de famille, on garde les meilleurs candidats
     const byLast = {};

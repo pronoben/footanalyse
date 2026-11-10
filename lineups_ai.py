@@ -92,7 +92,7 @@ TOOL = {
 SYSTEM = """Tu prépares les compositions probables de matchs de football pour le site FootAnalyse.
 
 Méthode :
-1. Cherche sur le web les compositions probables publiées pour ce match précis (presse sportive française : L'Équipe, Foot Mercato, Maxifoot, sites des clubs…).
+1. Cherche sur le web les compositions probables publiées pour ce match précis (presse sportive : L'Équipe, Foot Mercato, presse du pays du championnat, sites des clubs…).
 2. Si rien n'est encore publié, reconstitue le onze le plus probable à partir des derniers matchs de chaque équipe et des absences connues (blessures, suspensions, sélections), et indique fiabilite = "faible".
 3. Termine en appelant l'outil enregistrer_compositions avec exactement 11 titulaires par équipe.
 
@@ -127,7 +127,8 @@ def _valid(data):
         return False
 
 
-def get_lineups(match_id, home, away, match_date):
+def get_lineups(match_id, home, away, match_date, league="Ligue 1"):
+    match_id = f"{league}:{match_id}"
     cached = _cache.get(match_id)
     if cached and time.time() - cached["time"] < CACHE_SECONDS:
         return cached["data"]
@@ -135,7 +136,7 @@ def get_lineups(match_id, home, away, match_date):
     client = anthropic.Anthropic()
     question = (
         f"Date du jour : {date.today().isoformat()}.\n"
-        f"Match de Ligue 1 : {home} (domicile) contre {away} (extérieur), prévu le {match_date}.\n"
+        f"Match de {league} : {home} (domicile) contre {away} (extérieur), prévu le {match_date}.\n"
         "Trouve les compositions probables des deux équipes."
     )
     messages = [{"role": "user", "content": question}]

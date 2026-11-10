@@ -2,7 +2,8 @@
 Serveur FootAnalyse
 -------------------
 - Sert le site (index.html, css/, js/)
-- Expose /api/ligue1 : classement + prochains matchs de Ligue 1,
+- Expose /api/league?code=FL1|PL|PD|SA|BL1 : classement, prochains matchs et
+  buteurs d'un championnat (Ligue 1, Premier League, Liga, Serie A, Bundesliga),
   récupérés sur football-data.org avec TA clé API (jamais envoyée au navigateur)
 - Garde les données en cache 10 minutes (offre gratuite : 10 requêtes/minute)
 
@@ -29,11 +30,14 @@ import urllib.request
 from datetime import date, datetime, timedelta
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from urllib.parse import parse_qs, urlparse
 from zoneinfo import ZoneInfo
 
 ROOT = Path(__file__).resolve().parent
 PORT = int(os.environ.get("PORT", 8765))
-API_BASE = "https://api.football-data.org/v4/competitions/FL1"
+API_BASE = "https://api.football-data.org/v4/competitions/"
+# Codes football-data.org des championnats proposés par le site (tous gratuits)
+LEAGUE_CODES = {"FL1", "PL", "PD", "SA", "BL1"}
 CACHE_SECONDS = 600
 PARIS = ZoneInfo("Europe/Paris")
 
@@ -52,21 +56,21 @@ def load_env():
 load_env()
 API_KEY = os.environ.get("FOOTBALL_DATA_KEY", "")
 
-_cache = {"time": 0, "data": None}
+_cache = {}  # code du championnat -> {"time": ..., "data": ...}
 
 
-def call_api(path):
-    req = urllib.request.Request(API_BASE + path, headers={"X-Auth-Token": API_KEY})
+def call_api(path, code="FL1"):
+    req = urllib.request.Request(API_BASE + code + path, headers={"X-Auth-Token": API_KEY})
     with urllib.request.urlopen(req, timeout=15) as resp:
         return json.load(resp)
 
 
-def fetch_ligue1():
+def fetch_league(code):
     """Récupère et simplifie les données pour le site."""
-    standings_raw = call_api("/standings")
+    standings_raw = call_api("/standings", code)
     today = date.today()
     matches_raw = call_api(
-        f"/matches?dateFrom={today.isoformat()}&dateTo={(today + timedelta(days=21)).isoformat()}"
+        f"/matches?dateFrom={today.isoformat()}&dateTo={(today + timedelta(days=21)).isoformat()}", code
     )
 
     table = next(s for s in standings_raw["standings"] if s["type"] == "TOTAL")["table"]
@@ -104,7 +108,7 @@ def fetch_ligue1():
     # Classement des buteurs (optionnel : le site marche sans)
     players = []
     try:
-        for row in call_api("/scorers?limit=60").get("scorers", []):
+        for row in call_api("/scorers?limit=60", code).get("scorers", []):
             t = row.get("team") or {}
             players.append({
                 "name": row["player"]["name"],
@@ -147,8 +151,12 @@ class Handler(SimpleHTTPRequestHandler):
         self.wfile.write(body)
 
     def do_GET(self):
-        if self.path.split("?")[0] == "/api/ligue1":
-            return self.api_ligue1()
+        route = self.path.split("?")[0]
+        if route == "/api/league":
+            query = parse_qs(urlparse(self.path).query)
+            return self.api_league((query.get("code") or ["FL1"])[0].upper())
+        if route == "/api/ligue1":  # ancienne adresse, gardée pour compatibilité
+            return self.api_league("FL1")
         # Ne jamais servir le fichier contenant la clé
         if self.path.split("?")[0].lstrip("/").startswith(".env"):
             return self.send_error(404)
@@ -177,7 +185,8 @@ class Handler(SimpleHTTPRequestHandler):
                 fields = [str(body.get(k, ""))[:80] for k in ("id", "home", "away", "date")]
                 if not all(fields):
                     raise ValueError("Champs id, home, away et date obligatoires.")
-                result = lineups_ai.get_lineups(*fields)
+                league = str(body.get("league") or "Ligue 1")[:40]
+                result = lineups_ai.get_lineups(*fields, league=league)
         except (ValueError, json.JSONDecodeError) as e:
             return self.send_json(400, {"error": str(e)})
         except anthropic.AuthenticationError:
@@ -192,19 +201,22 @@ class Handler(SimpleHTTPRequestHandler):
             return self.send_json(502, {"error": str(e)})
         self.send_json(200, result)
 
-    def api_ligue1(self):
+    def api_league(self, code):
+        if code not in LEAGUE_CODES:
+            return self.send_json(400, {"error": f"Championnat inconnu : {code}"})
         if not API_KEY:
             return self.send_json(503, {"error": "Clé API manquante : crée le fichier .env (voir .env.example)."})
-        if _cache["data"] and time.time() - _cache["time"] < CACHE_SECONDS:
-            return self.send_json(200, _cache["data"])
+        cached = _cache.get(code)
+        if cached and time.time() - cached["time"] < CACHE_SECONDS:
+            return self.send_json(200, cached["data"])
         try:
-            data = fetch_ligue1()
+            data = fetch_league(code)
         except urllib.error.HTTPError as e:
             msg = {401: "Clé API invalide.", 403: "Accès refusé par l'API.", 429: "Trop de requêtes, réessaie dans une minute."}
             return self.send_json(502, {"error": msg.get(e.code, f"Erreur API ({e.code}).")})
         except Exception as e:  # réseau coupé, format inattendu…
             return self.send_json(502, {"error": f"Impossible de joindre l'API : {e}"})
-        _cache.update(time=time.time(), data=data)
+        _cache[code] = {"time": time.time(), "data": data}
         self.send_json(200, data)
 
 

@@ -95,7 +95,8 @@ function renderDashboard() {
   const k = Analysis.seasonKpis();
   const info = DATA_INFO.live
     ? `🟢 Données en direct (football-data.org) · Saison ${DATA_INFO.season} · mises à jour le ${DATA_INFO.fetchedAt}`
-    : `🟠 Données enregistrées · Saison ${DATA_INFO.season} · arrêtées après la ${DATA_INFO.updatedAfterDay}e journée (${DATA_INFO.updatedOn.split("-").reverse().join("/")})${DATA_INFO.apiError ? " · API : " + DATA_INFO.apiError : ""}`;
+    : `🟠 Données enregistrées · Saison ${DATA_INFO.season} · ${DATA_INFO.label}${DATA_INFO.apiError ? " · API : " + DATA_INFO.apiError : ""}`;
+  document.querySelectorAll(".league-name").forEach(el => { el.textContent = CURRENT_LEAGUE.name; });
   $("#data-info").textContent = info;
   $("#standings-info").textContent = info;
 
@@ -105,6 +106,7 @@ function renderDashboard() {
     ["Buts / match", k.goalsPerMatch],
     ["Matchs nuls", k.drawPct + " %"],
     ["Leader", `${k.leader.name.replace("Paris Saint-Germain", "PSG")} (${k.leader.pts} pts)`],
+    ["Meilleur buteur", topScorerLabel()],
   ].map(([l, v]) => `<div class="kpi"><div class="label">${l}</div><div class="value">${v}</div></div>`).join("");
 
   const table = Analysis.standings();
@@ -127,11 +129,17 @@ function renderMatches() {
   bindMatchClicks($("#all-matches"));
 }
 
+function topScorerLabel() {
+  const best = [...PLAYERS].filter(p => p.goals != null).sort((a, b) => b.goals - a.goals)[0];
+  return best ? `${best.name} (${best.goals})` : "—";
+}
+
+$("#filter-team").addEventListener("change", renderMatches);
 function initFilters() {
   const opts = [...TEAMS].sort((a, b) => a.name.localeCompare(b.name))
     .map(t => `<option value="${t.id}">${t.name}</option>`).join("");
-  $("#filter-team").insertAdjacentHTML("beforeend", opts);
-  $("#filter-team").addEventListener("change", renderMatches);
+  $("#filter-team").innerHTML = `<option value="">Toutes les équipes</option>${opts}`;
+  $("#predict-result").innerHTML = "";
   $("#predict-home").innerHTML = opts;
   $("#predict-away").innerHTML = opts;
   $("#predict-away").selectedIndex = 1;
@@ -233,10 +241,10 @@ async function loadLineups(m) {
     const res = await fetch("/api/lineup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: m.id, home: team(m.home).name, away: team(m.away).name, date: m.date }),
+      body: JSON.stringify({ id: m.id, home: team(m.home).name, away: team(m.away).name, date: m.date, league: CURRENT_LEAGUE.name }),
     });
     const d = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(d.error || `Erreur ${res.status}`);
+    if (!res.ok) throw new Error(d.error || ([404, 405, 501].includes(res.status) ? "l'actualisation par l'IA n'est pas disponible sur cette version en ligne du site" : `Erreur ${res.status}`));
     renderLineups(m, d);
     $("#lineups-msg").innerHTML = "";
     btn.textContent = "Actualiser avec l'IA";
@@ -260,7 +268,7 @@ function showSavedLineups(m) {
   }
   renderLineups(m, {
     domicile: home, exterieur: away, fiabilite: "faible",
-    note: SAVED_LINEUPS_INFO.note, sources: [SAVED_LINEUPS_INFO.source], generee_le: "08/11/2026",
+    note: SAVED_LINEUPS_INFO.note, sources: [SAVED_LINEUPS_INFO.source], generee_le: SAVED_LINEUPS_INFO.date || "—",
   });
 }
 
@@ -282,8 +290,9 @@ function renderLineups(m, d) {
 // ---------- Classement ----------
 function renderStandings() {
   const n = STANDINGS.length;
+  const { releg, barrage } = CURRENT_LEAGUE.zones;
   $("#standings-table tbody").innerHTML = Analysis.standings().map((t, i) => `
-    <tr class="${i >= n - 2 ? "releg" : i === n - 3 ? "barrage" : ""}">
+    <tr class="${i >= n - releg ? "releg" : i >= n - releg - barrage ? "barrage" : ""}">
       <td>${i + 1}</td>
       <td class="left">${dot(t.id)}${t.name}</td>
       <td>${t.P}</td><td>${t.W}</td><td>${t.D}</td><td>${t.L}</td>
@@ -304,35 +313,73 @@ function renderPrediction() {
 }
 $("#predict-btn").addEventListener("click", renderPrediction);
 
-// ---------- Démarrage ----------
-// On essaie d'abord l'API (via server.py). En cas d'échec, on garde
-// les données enregistrées dans data.js.
-async function loadLiveData() {
-  try {
-    const res = await fetch("/api/ligue1");
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || res.status);
-    TEAMS = data.teams;
-    STANDINGS = data.standings;
-    UPCOMING = data.upcoming;
-    DATA_INFO = { ...data.info, live: true };
-    if (data.players && data.players.length) {
-      PLAYERS = data.players.map(p => ({
-        ...p,
-        total: p.goals != null && p.assists != null ? p.goals + p.assists : null,
-        minutes: null,
-      }));
-      PLAYER_STATS_INFO = { live: true, label: `en direct (football-data.org, ${data.info.fetchedAt})`, sources: ["https://www.football-data.org/"] };
-    }
-  } catch (e) {
-    DATA_INFO.apiError = e.message;
-    console.info("API indisponible, données enregistrées utilisées :", e.message);
-  }
+// ---------- Championnats ----------
+function renderLeagueBar() {
+  $("#league-bar").innerHTML = LEAGUE_ORDER.map(id => {
+    const l = LEAGUES[id];
+    return `<button class="league-btn ${l === CURRENT_LEAGUE ? "active" : ""}" data-league="${id}">${l.flag} ${l.short}</button>`;
+  }).join("");
+  document.querySelectorAll(".league-btn").forEach(b =>
+    b.addEventListener("click", () => switchLeague(b.dataset.league)));
 }
 
-loadLiveData().then(() => {
+function renderAll() {
+  renderLeagueBar();
   initFilters();
   renderDashboard();
   renderMatches();
   renderStandings();
-});
+}
+
+// Change de championnat (aussi utilisé par le chatbot)
+async function switchLeague(id, { keepView = false } = {}) {
+  if (!LEAGUES[id]) return;
+  setLeague(id);
+  localStorage.setItem("footanalyse-league", id);
+  renderAll(); // affichage immédiat avec les données enregistrées
+  if (!keepView) showView("dashboard");
+  if (await loadLiveData(LEAGUES[id])) { setLeague(id); renderAll(); }
+}
+
+// ---------- Données en direct ----------
+// On essaie l'API (via server.py) pour le championnat affiché. En cas
+// d'échec, on garde les données enregistrées (js/leagues/*.js).
+async function loadLiveData(league) {
+  if (league.liveLoaded || league.liveFailed) return false;
+  try {
+    const res = await fetch(`/api/league?code=${league.apiCode}`);
+    const data = await res.json().catch(() => null);
+    // Site hébergé sans server.py (hébergement statique) : pas d'API, on reste sur les données enregistrées
+    if (!data) throw new Error("");
+    if (!res.ok) throw new Error(data.error || res.status);
+    // On garde couleurs et surnoms des clubs enregistrés (l'API ne les fournit pas)
+    const simple = x => String(x).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    league.teams = data.teams.map(t => {
+      const base = league.teams.find(b => b.id === t.id || simple(t.name).includes(simple(b.name)) ||
+        (b.aliases || []).some(a => simple(t.name) === simple(a))) || {};
+      return { ...t, color: base.color, aliases: [...(base.aliases || []), simple(base.name || "")].filter(Boolean) };
+    });
+    league.standings = data.standings;
+    league.upcoming = data.upcoming;
+    league.info = { ...data.info, live: true };
+    if (data.players && data.players.length) {
+      league.players = data.players.map(p => ({
+        ...p,
+        total: p.goals != null && p.assists != null ? p.goals + p.assists : null,
+        minutes: null,
+      }));
+      league.playersInfo = { live: true, label: `en direct (football-data.org, ${data.info.fetchedAt})`, sources: ["https://www.football-data.org/"] };
+    }
+    league.liveLoaded = true;
+    return true;
+  } catch (e) {
+    league.liveFailed = true;
+    league.info = { ...league.info, apiError: e.message || null };
+    if (league === CURRENT_LEAGUE) DATA_INFO = league.info;
+    console.info(`API indisponible pour ${league.name}, données enregistrées utilisées :`, e.message);
+    return false;
+  }
+}
+
+// ---------- Démarrage ----------
+switchLeague(LEAGUES[localStorage.getItem("footanalyse-league")] ? localStorage.getItem("footanalyse-league") : "L1");

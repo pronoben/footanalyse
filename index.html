@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FootAnalyse – Analyse de la Ligue 1</title>
+  <title>FootAnalyse – Analyse des 5 grands championnats</title>
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
@@ -16,11 +16,12 @@
       <button class="nav-btn" data-view="predict">Pronostic</button>
     </nav>
   </header>
+  <div id="league-bar" class="league-bar" aria-label="Choix du championnat"></div>
 
   <main>
     <!-- TABLEAU DE BORD -->
     <section id="view-dashboard" class="view active">
-      <h1>Ligue 1 – Tableau de bord</h1>
+      <h1><span class="league-name">Ligue 1</span> – Tableau de bord</h1>
       <p class="subtitle" id="data-info"></p>
       <div class="kpis" id="kpis"></div>
       <div class="grid-2">
@@ -57,7 +58,7 @@
 
     <!-- CLASSEMENT -->
     <section id="view-standings" class="view">
-      <h1>Classement Ligue 1</h1>
+      <h1>Classement <span class="league-name">Ligue 1</span></h1>
       <p class="subtitle" id="standings-info"></p>
       <div class="card table-wrap">
         <table id="standings-table">
@@ -75,7 +76,7 @@
     <!-- PRONOSTIC -->
     <section id="view-predict" class="view">
       <h1>Pronostic libre</h1>
-      <p class="subtitle">Choisis n'importe quelle affiche de Ligue 1. Modèle de Poisson basé sur les buts marqués et encaissés cette saison.</p>
+      <p class="subtitle">Choisis n'importe quelle affiche du championnat sélectionné. Modèle de Poisson basé sur les buts marqués et encaissés cette saison.</p>
       <div class="card predict-form">
         <select id="predict-home"></select>
         <span class="vs">VS</span>
@@ -94,7 +95,7 @@
       <button id="chat-close" aria-label="Fermer">✕</button>
     </div>
     <div id="chat-messages" class="chat-messages">
-      <div class="msg bot">Salut ! ⚽ Je suis l'assistant foot de FootAnalyse.<br>Pose-moi n'importe quelle question sur l'analyse des matchs : pronostics, compos probables, absents, stats des joueurs (buts, passes…), comparaisons… ou sur le football en général.</div>
+      <div class="msg bot">Salut ! ⚽ Je suis l'assistant foot de FootAnalyse.<br>Pose-moi n'importe quelle question sur la Ligue 1, la Premier League, la Liga, la Serie A ou la Bundesliga : pronostics, compos probables, absents, stats des joueurs (buts, passes…), comparaisons… ou sur le football en général.</div>
     </div>
     <div id="chat-suggestions" class="chat-suggestions"></div>
     <form id="chat-form" class="chat-form">
@@ -103,11 +104,17 @@
     </form>
   </aside>
 
-  <footer>Projet de groupe – FootAnalyse © 2026 · Données : football-data.org (en direct) ou données enregistrées (Wikipédia, foot-actu.com)</footer>
+  <footer>Projet de groupe – FootAnalyse © 2026 · Données : football-data.org (en direct) ou données enregistrées (Wikipédia, Foot Mercato, ligue1.com, Starting11)</footer>
 
   <script src="js/data.js"></script>
   <script src="js/lineups-data.js"></script>
   <script src="js/players-data.js"></script>
+  <script src="js/leagues.js"></script>
+  <script src="js/leagues/ligue1.js"></script>
+  <script src="js/leagues/premier-league.js"></script>
+  <script src="js/leagues/liga.js"></script>
+  <script src="js/leagues/serie-a.js"></script>
+  <script src="js/leagues/bundesliga.js"></script>
   <script src="js/analysis.js"></script>
   <script src="js/chat-players.js"></script>
   <script src="js/chat-local.js"></script>
