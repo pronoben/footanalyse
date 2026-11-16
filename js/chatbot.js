@@ -140,6 +140,14 @@ const Chatbot = (() => {
     "Compo probable du Real Madrid",
     "Classement de la Serie A",
     "Meilleurs buteurs de Bundesliga",
+    "Qui a gagné la Coupe du monde 1998 ?",
+    "C'est quoi le hors-jeu ?",
+    "Ballon d'Or 2025",
+    "Palmarès du Real Madrid",
+    "Qui est Zidane ?",
+    "Palmarès de la Ligue des champions",
+    "Les grands derbys",
+    "Records du foot",
   ];
   const sugBox = document.getElementById("chat-suggestions");
   SUGGESTIONS.forEach(text => {

@@ -178,7 +178,7 @@ const LocalBot = (() => {
         }).join("\n");
       }
       if (has(/but/)) { const k = Analysis.seasonKpis(); return `${k.goals} buts en ${k.matches} matchs cette saison, soit **${k.goalsPerMatch} par match**. ${k.drawPct} % de matchs nuls.`; }
-      return HELP;
+      return HELP + (typeof EncycloBot !== "undefined" ? "\n" + EncycloBot.HELP : "");
     }
 
     // Une ou deux équipes citées : on identifie le match concerné
@@ -250,6 +250,10 @@ const LocalBot = (() => {
   }
 
   function reply(question) {
+    // Culture foot (palmarès, règles, légendes, clubs…) : js/chat-encyclo.js
+    const encyclo = typeof EncycloBot !== "undefined" ? EncycloBot.reply(question) : null;
+    if (encyclo) return encyclo;
+
     const target = detectLeague(question);
     let prefix = "";
     if (target !== CURRENT_LEAGUE.id) {
