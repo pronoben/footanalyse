@@ -13,6 +13,7 @@ puis ouvrir http://localhost:8765
 
 - Expose /api/chat : le chatbot (Claude), voir chatbot_ai.py
 - Expose /api/lineup : compositions probables d'un match, voir lineups_ai.py
+- Expose /api/coach : le chatbot coach (mêmes outils, autre personnalité)
 
 Les clés API se mettent dans un fichier .env (voir .env.example) :
     FOOTBALL_DATA_KEY=...
@@ -30,7 +31,7 @@ import urllib.request
 from datetime import date, datetime, timedelta
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, unquote, urlparse
 from zoneinfo import ZoneInfo
 
 ROOT = Path(__file__).resolve().parent
@@ -157,14 +158,25 @@ class Handler(SimpleHTTPRequestHandler):
             return self.api_league((query.get("code") or ["FL1"])[0].upper())
         if route == "/api/ligue1":  # ancienne adresse, gardée pour compatibilité
             return self.api_league("FL1")
-        # Ne jamais servir le fichier contenant la clé
-        if self.path.split("?")[0].lstrip("/").startswith(".env"):
+        if self.is_private(route):
             return self.send_error(404)
         return super().do_GET()
 
+    def do_HEAD(self):
+        if self.is_private(self.path.split("?")[0]):
+            return self.send_error(404)
+        return super().do_HEAD()
+
+    @staticmethod
+    def is_private(route):
+        """Fichiers à ne jamais servir : fichiers cachés (.env avec les clés,
+        .git, .claude…) et code Python du serveur."""
+        clean = unquote(route.split("#")[0]).replace("\\", "/").lower()
+        return any(p.startswith(".") for p in clean.split("/")) or clean.endswith((".py", ".pyc"))
+
     def do_POST(self):
         route = self.path.split("?")[0]
-        if route not in ("/api/chat", "/api/lineup"):
+        if route not in ("/api/chat", "/api/lineup", "/api/coach"):
             return self.send_error(404)
         if not os.environ.get("ANTHROPIC_API_KEY"):
             return self.send_json(503, {"error": "Clé ANTHROPIC_API_KEY manquante dans .env."})
@@ -179,8 +191,9 @@ class Handler(SimpleHTTPRequestHandler):
             if length > 200_000:
                 return self.send_json(413, {"error": "Message trop long."})
             body = json.loads(self.rfile.read(length) or b"{}")
-            if route == "/api/chat":
-                result = chatbot_ai.answer(body.get("messages", []), str(body.get("context", "")))
+            if route in ("/api/chat", "/api/coach"):
+                mode = "coach" if route == "/api/coach" else "analyse"
+                result = chatbot_ai.answer(body.get("messages", []), str(body.get("context", "")), mode=mode)
             else:
                 fields = [str(body.get(k, ""))[:80] for k in ("id", "home", "away", "date")]
                 if not all(fields):

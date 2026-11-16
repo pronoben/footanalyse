@@ -1,0 +1,17 @@
+# Configuration d'hébergement sur Render (https://render.com) – offre gratuite.
+# Render lit ce fichier quand on crée un « Blueprint » à partir du dépôt GitHub.
+services:
+  - type: web
+    name: footanalyse
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python server.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.7
+      # Clés facultatives : Render les demande à la création (jamais dans le code).
+      - key: FOOTBALL_DATA_KEY
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false

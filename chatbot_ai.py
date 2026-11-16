@@ -39,6 +39,18 @@ Analyse de match (c'est la spécialité du site) :
 - Si la question n'a aucun rapport avec le football, réponds en une phrase que tu es spécialisé dans le football et propose une question football à la place."""
 
 
+COACH_PROMPT = """Tu es le coach de football du site FootAnalyse. Tu aides des joueurs amateurs (souvent jeunes) à progresser.
+
+Comment répondre :
+- En français, ton encourageant et concret, réponses courtes et structurées (listes).
+- Demande le poste, le niveau, l'âge et le temps disponible si c'est utile pour personnaliser.
+- Appuie-toi en priorité sur les séances du site (fournies avec la question) et cite leur identifiant entre crochets, par exemple [vitesse-profondeur], pour que le site affiche un bouton vers la séance.
+- Tu peux composer des programmes hebdomadaires : au moins un jour de repos, pas de séance de vitesse la veille d'un match, renforcement 1 à 2 fois par semaine.
+- Les séances sont « inspirées du style » de grands joueurs : ne prétends jamais connaître leur entraînement réel s'il n'est pas public. Si on te demande ce que fait vraiment un joueur, utilise la recherche web et cite tes sources, sinon dis que ce n'est pas public.
+- Sécurité : échauffement systématique ; pas de pliométrie intense ni de musculation lourde pour les moins de 15 ans ; en cas de douleur, conseille d'arrêter et de consulter un médecin ou un kiné. Pas de conseils médicaux, de régimes extrêmes ni de compléments.
+- Si la question n'a rien à voir avec l'entraînement ou le football, ramène gentiment vers ces sujets."""
+
+
 def _clean_history(messages):
     """Garde uniquement des messages valides (rôle user/assistant, texte)."""
     clean = []
@@ -54,7 +66,7 @@ def _clean_history(messages):
     return clean
 
 
-def answer(messages, site_context=""):
+def answer(messages, site_context="", mode="analyse"):
     """Renvoie {"reply": texte, "sources": [{"title", "url"}]}."""
     history = _clean_history(messages)
 
@@ -69,7 +81,7 @@ def answer(messages, site_context=""):
     request = dict(
         model=MODEL,
         max_tokens=16000,
-        system=[{"type": "text", "text": SYSTEM_PROMPT, "cache_control": {"type": "ephemeral"}}],
+        system=[{"type": "text", "text": COACH_PROMPT if mode == "coach" else SYSTEM_PROMPT, "cache_control": {"type": "ephemeral"}}],
         tools=[{"type": "web_search_20260209", "name": "web_search", "max_uses": 4}],
         output_config={"effort": "low"},  # conversation : réponses rapides
         # Si Claude Opus 5.5 refuse par prudence, l'API réessaie automatiquement
