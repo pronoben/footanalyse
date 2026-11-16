@@ -91,6 +91,7 @@ const Chatbot = (() => {
     history.push({ role: "user", content: text });
 
     if (!aiAvailable) {
+      if (typeof CareerBot !== "undefined") await CareerBot.ready();
       const reply = localReply(text);
       history.push({ role: "assistant", content: reply });
       return addMessage(reply, "bot");
@@ -109,6 +110,7 @@ const Chatbot = (() => {
       // 503 = pas de clé / SDK non installé / site ouvert sans server.py : mode simple
       if ([404, 405, 501, 503].includes(e.status) || !e.status) {
         aiAvailable = false;
+        if (typeof CareerBot !== "undefined") await CareerBot.ready();
         const reply = localReply(text);
         history.push({ role: "assistant", content: reply });
         const notice = noticeShown ? "" : `*Mode analyse locale (IA indisponible : ${e.message}) — je réponds avec les données et le modèle du site.*\n\n`;
@@ -148,6 +150,9 @@ const Chatbot = (() => {
     "Palmarès de la Ligue des champions",
     "Les grands derbys",
     "Records du foot",
+    "Carrière de Mbappé",
+    "Combien de sélections pour Griezmann ?",
+    "Où a joué Zlatan Ibrahimović ?",
   ];
   const sugBox = document.getElementById("chat-suggestions");
   SUGGESTIONS.forEach(text => {

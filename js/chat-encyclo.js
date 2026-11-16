@@ -161,7 +161,7 @@ const EncycloBot = (() => {
   // ---------- Mots qui montrent l'intention ----------
   const PREDICTION = /\bva gagner\b|\bvont gagner\b|\bprono|\bfavori\b|\bcote\b|\bparier\b/;
   const LEAGUE_HISTORY = /\bchampions?\b|\bpalmares\b|\bvainqueurs?\b|\ba gagne\b|\bont gagne\b|\bqui a gagne\b|\bremporte\b|\btitres?\b|\ble plus titre\b|\bhistorique\b/;
-  const BIO = /\bqui est\b|\bqui etait\b|\bc est qui\b|\bparle\b|\bhistoire\b|\bcarriere\b|\bbiographie\b|\bpalmares\b|\blegende\b|\bpresente\b|\binfos?\b|\bconnais\b|\bvie de\b/;
+  const BIO = /\bqui est\b|\bqui etait\b|\bc est qui\b|\bparle\b|\bhistoire\b|\bpalmares\b|\blegende\b|\bpresente\b|\binfos?\b|\bconnais\b|\bvie de\b/;
   const CLUB_INFO = /\bstade\b|\bfonde\b|\bfondation\b|\bcree\b|\bcreation\b|\bhistoire\b|\bpalmares\b|\btitres?\b|\btrophees?\b|\bsurnom\b|\bville\b|\bpresente\b|\bparle\b|\bc est quoi\b|\binfos?\b|\bqui est\b|\bconnais\b|\bdate de\b|\bquel age\b|\bfiche\b/;
 
   function teamMentioned(question) {
@@ -231,7 +231,8 @@ const EncycloBot = (() => {
     "- « Palmarès de la Ligue des champions », « Ballon d'Or 2025 », « Combien de Ballons d'Or a Messi ? »\n" +
     "- « Qui a été champion de Serie A en 2023 ? », « Palmarès du PSG », « Stade de l'OM »\n" +
     "- « C'est quoi le hors-jeu ? », « Comment marche la VAR ? », « C'est quoi un 4-3-3 ? »\n" +
-    "- « Qui est Zidane ? », « Parle-moi de Guardiola », « Les grands derbys », « Records du foot »";
+    "- « Qui est Zidane ? », « Parle-moi de Guardiola », « Les grands derbys », « Records du foot »\n" +
+    "Et les carrières des joueurs :\n- « Carrière de Mbappé », « Combien de sélections pour Griezmann ? », « Quel âge a Lamine Yamal ? », « Où a joué Zlatan Ibrahimović ? »";
 
   return { reply, HELP };
 })();

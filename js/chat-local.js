@@ -250,6 +250,12 @@ const LocalBot = (() => {
   }
 
   function reply(question) {
+    // Carrière d'un joueur (« carrière de Mbappé », « combien de sélections pour Griezmann ? ») : js/chat-careers.js
+    const hasCareers = typeof CareerBot !== "undefined";
+    if (hasCareers && CareerBot.wants(question) && (CareerBot.count() === 0 || CareerBot.find(question).length)) {
+      const career = CareerBot.reply(question, true);
+      if (career) return career;
+    }
     // Culture foot (palmarès, règles, légendes, clubs…) : js/chat-encyclo.js
     const encyclo = typeof EncycloBot !== "undefined" ? EncycloBot.reply(question) : null;
     if (encyclo) return encyclo;
@@ -263,6 +269,11 @@ const LocalBot = (() => {
       prefix = `*(Je passe sur ${LEAGUES[target].flag} ${LEAGUES[target].name}.)*\n\n`;
     }
     const answer = replyInLeague(question);
+    // Question non comprise : peut-être un joueur hors des stats de la saison (légende, remplaçant…)
+    if (hasCareers && answer.startsWith(HELP)) {
+      const career = CareerBot.reply(question, CareerBot.wants(question));
+      if (career) return career;
+    }
     return prefix + answer + (lastSubject === "player" && !findTeams(question).length ? namesakesNote(question) : "");
   }
 
