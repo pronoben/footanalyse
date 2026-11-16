@@ -316,23 +316,84 @@ def build_player(title, text):
         "nt": [[y, re.sub(r"^([A-Z][\w .'-]+?)(?= U-?\d|$| Olympic| B$)", lambda m: country_fr(m.group(1)), t), c, g]
                for y, t, c, g in national],
         "u": strip_markup(f.get("club_update", f.get("club-update", ""))) or None,
+        "no": to_int(f.get("club_number", f.get("clubnumber", ""))),
     }
 
 
 # ---------- Effectifs ----------
 def league_clubs(page):
+    """[(titre de la page du club, nom court affiché)] à partir du tableau des stades."""
     _, w = page_wikitext([page])[page]
     sec = w[w.find("Stadiums and locations"):]
-    table = sec[sec.find("{|"):sec.find("|}")]
+    start = sec.find("{|")
+    end = sec.find("\n|}", start)
+    table = sec[start:end]
     clubs = []
-    for row in table.split("|-")[1:]:
+    for row in table.split("\n|-")[1:]:
         lines = [l for l in row.split("\n") if l.startswith("|")]
         if not lines:
             continue
-        m = re.search(r"\[\[([^\]|]+)(?:\|[^\]]*)?\]\]", lines[0])
-        if m and m.group(1) not in clubs:
-            clubs.append(m.group(1))
+        m = re.search(r"\[\[([^\]|]+)(?:\|([^\]]*))?\]\]", lines[0])
+        if m and m.group(1) not in [c[0] for c in clubs]:
+            clubs.append((m.group(1), m.group(2) or m.group(1)))
     return clubs
+
+
+POS_FR = {"GK": "Gardien", "DF": "Défenseur", "MF": "Milieu", "FW": "Attaquant"}
+
+
+def squad_details(w):
+    """Effectif détaillé : numéro, poste, nationalité, capitaine, prêté ailleurs."""
+    m = SQUAD_HEAD.search(w)
+    if not m:
+        return []
+    level = len(re.match(r"^=+", m.group(0)).group(0))
+    end = re.search(r"^={2,%d}[^=].*?={2,%d}\s*$" % (level, level), w[m.end():], re.M)
+    sec = w[m.end(): m.end() + end.start()] if end else w[m.end():]
+    cut = re.search(r"^==+\s*.*(Reserve|Academy|Youth|Women|U-?2[0-3]|U-?19|Under-|B team|II)\b.*==+\s*$", sec, re.M | re.I)
+    if cut:
+        sec = sec[:cut.start()]
+    loan_at = re.search(r"^==+\s*.*(loan|Loan).*==+\s*$", sec, re.M)
+    out = []
+    for t in re.finditer(r"\{\{\s*(?:Fs player|football squad player)\s*\|(.*?)\}\}(?=\s*(?:<ref|\{\{|\n|$))", sec, re.I | re.S):
+        body = t.group(1)
+        name = re.search(r"\bname\s*=\s*\[\[([^\]|]+)(?:\|[^\]]*)?\]\]", body)
+        if not name:
+            continue
+        get = lambda k: (re.search(r"\b%s\s*=\s*([^|}]*)" % k, body) or [None, ""])[1].strip()
+        other = strip_markup(get("other")).lower()
+        out.append({
+            "t": name.group(1).strip(),
+            "no": to_int(get("no")),
+            "pos": POS_FR.get(get("pos").upper(), None),
+            "cap": 1 if "captain" in other and "vice" not in other else 0,
+            "loan": 1 if (loan_at and t.start() > loan_at.start()) else 0,
+        })
+    return out
+
+
+def club_info(w):
+    f = {}
+    start = w.lower().find("{{infobox football club")
+    if start >= 0:
+        for line in w[start:].split("\n")[1:200]:
+            if line.startswith("'''"):
+                break
+            mm = re.match(r"^\s*\|\s*([a-z_0-9]+)\s*=\s*(.*)$", line)
+            if mm:
+                f.setdefault(mm.group(1), mm.group(2))
+    coach = next((strip_markup(f[k]) for k in ("manager", "head_coach", "headcoach", "coach", "mgrtitle_name") if f.get(k) and strip_markup(f[k])), None)
+    if coach:
+        months = dict(zip("January February March April May June July August September October November December".split(),
+                          "janvier février mars avril mai juin juillet août septembre octobre novembre décembre".split()))
+        coach = re.sub(r"\((?:from|starting) (\d{1,2}) (\w+) (\d{4})\)", lambda m: f"(à partir du {m.group(1)} {months.get(m.group(2), m.group(2))} {m.group(3)})", coach)
+        coach = re.sub(r"\((?:interim|caretaker)\)", "(intérim)", coach, flags=re.I)
+    return {
+        "coach": coach,
+        "ground": strip_markup(f.get("ground", "")) or None,
+        "capacity": strip_markup(f.get("capacity", "")) or None,
+        "president": next((strip_markup(f[k]) for k in ("chairman", "president", "owner") if f.get(k) and strip_markup(f[k])), None),
+    }
 
 
 SQUAD_HEAD = re.compile(r"^==+\s*(First[- ]team squad|Current squad|Players|First team|Squad)\s*==+\s*$", re.I | re.M)
@@ -354,21 +415,23 @@ def squad_players(w):
 
 
 def main():
-    titles, club_of = [], {}
+    titles, club_of, club_rows = [], {}, []
     for lg, page in LEAGUE_PAGES.items():
         clubs = league_clubs(page)
         print(f"{lg} : {len(clubs)} clubs")
-        texts = page_wikitext(clubs)
-        for c in clubs:
+        texts = page_wikitext([c[0] for c in clubs])
+        for c, label in clubs:
             if c not in texts:
                 print(f"  ! page introuvable : {c}")
                 continue
-            players = squad_players(texts[c][1])
-            print(f"  {c} : {len(players)} joueurs")
-            for p in players:
-                if p not in club_of:
-                    club_of[p] = c
-                    titles.append(p)
+            squad = squad_details(texts[c][1])
+            info = club_info(texts[c][1])
+            print(f"  {c} : {len(squad)} joueurs, entraîneur : {info['coach']}")
+            club_rows.append({"lg": lg, "t": c, "label": label, **info, "squad": squad})
+            for p in squad:
+                if p["t"] not in club_of:
+                    club_of[p["t"]] = c
+                    titles.append(p["t"])
     for t in LEGENDS:
         if t not in club_of:
             titles.append(t)
@@ -392,6 +455,7 @@ def main():
         "source": "Wikipédia (en.wikipedia.org), infobox « Infobox football biography » de chaque joueur",
         "note": "Matchs et buts en club = championnat uniquement (convention Wikipédia).",
         "players": players,
+        "clubs": club_rows,
     }
     OUT.write_text(json.dumps(data, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     print(f"{len(players)} joueurs écrits dans {OUT} ({OUT.stat().st_size // 1024} Ko)")

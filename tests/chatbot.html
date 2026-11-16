@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tests du chatbot – FootAnalyse</title>
+  <style>
+    :root { --bg: #0f1419; --card: #1a2129; --text: #e8edf2; --muted: #8b98a5; --ok: #22c55e; --ko: #ef4444; }
+    body { margin: 0; padding: 20px 16px; font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); }
+    h1 { font-size: 1.4rem; margin: 0 0 6px; }
+    p { color: var(--muted); margin: 0 0 16px; }
+    #summary { font-size: 1.1rem; font-weight: 700; margin-bottom: 14px; }
+    .case { background: var(--card); border-left: 4px solid var(--ok); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; font-size: 0.9rem; }
+    .case.ko { border-left-color: var(--ko); }
+    .q { font-weight: 700; }
+    .exp, .got { color: var(--muted); white-space: pre-wrap; word-break: break-word; }
+    .ko .got { color: #fca5a5; }
+    label { color: var(--muted); }
+  </style>
+</head>
+<body>
+  <h1>🧪 Tests du chatbot</h1>
+  <p>Chaque question est posée au chatbot (mode sans IA) et la réponse est comparée à ce qu'on attend. Ouvre cette page via le serveur du site (<code>python3 server.py</code> puis <code>http://localhost:8765/tests/chatbot.html</code>).</p>
+  <label><input type="checkbox" id="only-ko" /> Afficher seulement les échecs</label>
+  <div id="summary">Chargement…</div>
+  <div id="results"></div>
+
+  <!-- Éléments minimum dont les scripts du site ont besoin -->
+  <div hidden>
+    <div id="league-bar"></div><div id="kpis"></div><div id="top-attack"></div><div id="top-defense"></div>
+    <div id="next-matches"></div><select id="filter-team"></select><div id="all-matches"></div><div id="match-detail"></div>
+    <table id="standings-table"><tbody></tbody></table><p id="data-info"></p><p id="standings-info"></p>
+    <select id="predict-home"></select><select id="predict-away"></select><button id="predict-btn"></button><div id="predict-result"></div>
+    <section class="view" id="view-dashboard"></section><section class="view" id="view-matches"></section><section class="view" id="view-detail"></section>
+    <section class="view" id="view-standings"></section><section class="view" id="view-predict"></section><section class="view" id="view-coach"></section><section class="view" id="view-session"></section>
+    <select id="coach-quality"></select><select id="coach-level"></select><input id="coach-search" /><div id="coach-grid"></div>
+    <div id="coach-messages"></div><div id="coach-suggestions"></div><form id="coach-form"><input id="coach-input" /><button></button></form><div id="session-detail"></div>
+    <button id="chat-toggle"></button><aside id="chat-panel"><button id="chat-close"></button><div id="chat-messages"></div><div id="chat-suggestions"></div><form id="chat-form"><input id="chat-input" /><button></button></form></aside>
+  </div>
+
+  <script src="../js/data.js"></script>
+  <script src="../js/lineups-data.js"></script>
+  <script src="../js/players-data.js"></script>
+  <script src="../js/leagues.js"></script>
+  <script src="../js/leagues/ligue1.js"></script>
+  <script src="../js/leagues/premier-league.js"></script>
+  <script src="../js/leagues/liga.js"></script>
+  <script src="../js/leagues/serie-a.js"></script>
+  <script src="../js/leagues/bundesliga.js"></script>
+  <script src="../js/analysis.js"></script>
+  <script src="../js/chat-players.js"></script>
+  <script src="../js/foot-knowledge.js"></script>
+  <script src="../js/chat-encyclo.js"></script>
+  <script>
+    // Le module carrières charge « js/careers.json » : depuis /tests/ il faut remonter d'un dossier
+    const _fetch = window.fetch;
+    window.fetch = (url, opts) => _fetch(typeof url === "string" && url.startsWith("js/") ? "../" + url : url, opts);
+  </script>
+  <script src="../js/chat-careers.js"></script>
+  <script src="../js/chat-router.js"></script>
+  <script src="../js/chat-local.js"></script>
+  <script src="../js/chatbot.js"></script>
+  <script src="../js/app.js"></script>
+  <script>
+    // [question, ce que la réponse DOIT contenir (expression régulière), ce qu'elle ne doit PAS contenir (optionnel)]
+    const CASES = [
+      // --- Matchs et pronostics ---
+      ["Qui va gagner Nice – PSG ?", /Nice – Paris Saint-Germain.*\d+ %/s],
+      ["qui va gagner psg om", /Paris Saint-Germain – Marseille|Marseille – Paris Saint-Germain/],
+      ["prono du match de marseille", /Marseille/],
+      ["Analyse Lille – Lyon", /Lille – Lyon.*Rapport de forces/s],
+      ["Plus de 2,5 buts entre Lens et Toulouse ?", /Plus de 2,5 buts/],
+      ["Quel est le match le plus serré de la journée ?", /serrés/],
+      ["Comment marche le pronostic ?", /Poisson/],
+      // --- Calendrier et classement ---
+      ["quand joue l'om", /Prochain match de \*\*Marseille\*\*/],
+      ["a quelle heure joue le psg", /Prochain match de \*\*Paris Saint-Germain\*\*.*\d+h\d+/s],
+      ["contre qui joue rennes", /Prochain match de \*\*Rennes\*\*/],
+      ["combien de points a le psg", /\*\*\d+ points\*\*/],
+      ["qui est premier en ligue 1", /Paris Saint-Germain\*\* est en tête de \*\*Ligue 1/],
+      ["qui va descendre en ligue 2", /Bas du classement.*relégable/s],
+      ["qui est dernier de liga", /Bas du classement de \*\*Liga\*\*/],
+      ["clasement ligue 1", /Classement Ligue 1/],
+      ["Classement de la Serie A", /Classement Serie A/],
+      // --- Compos, absents, effectifs ---
+      ["Compo probable de l'OM", /Composition probable de \*\*Marseille\*\*/],
+      ["Absents du PSG", /Absents.*Paris Saint-Germain/s],
+      ["qui est l'entraineur du psg", /entraîneur de \*\*Paris Saint-Germain\*\* est \*\*Luis Enrique\*\*/],
+      ["qui entraine le real madrid", /entraîneur de \*\*Real Madrid\*\*/],
+      ["qui est le capitaine du psg", /capitaine de \*\*Paris Saint-Germain\*\* est \*\*Marquinhos\*\*/],
+      ["qui est le gardien de l'om", /Gardiens de \*\*Marseille\*\*/],
+      ["effectif de l'OM", /Effectif de \*\*Marseille\*\*.*Gardiens.*Attaquants/s],
+      ["qui porte le numéro 10 au psg", /n° 10/],
+      // --- Joueurs : saison en cours ---
+      ["Stats de Sinayoko", /Sinayoko.*Buts/s],
+      ["stats de kane", /Kane.*Buts/s],
+      ["combien de buts a mis haaland cette saison", /Haaland.*Buts : \*\*\d+/s, /carrière/i],
+      ["meilleur buteur ligue 1", /Meilleurs buteurs/],
+      ["Meilleurs passeurs", /Meilleurs passeurs/],
+      ["Compare Gouiri et Wahi", /Gouiri.*Wahi/s],
+      // --- Blessures ---
+      ["est ce que mbappe est blesse", /Kylian Mbappé/, /Ethan/],
+      ["hakimi est il blessé", /Hakimi.*absent/s],
+      // --- Carrières ---
+      ["carrière de Mbappé", /Kylian Mbappé.*Carrière en club/s],
+      ["combien de buts a marqué Ronaldo dans sa carrière", /Cristiano Ronaldo/],
+      ["carrière de Pelé", /\*\*Pelé\*\*.*Santos/s],
+      ["dans quels clubs a joué Neymar", /Santos.*Barcelona.*Paris Saint-Germain/s],
+      ["Griezmann a quel âge", /\*\*\d+ ans\*\*/],
+      ["nombre de sélections de Lloris", /145 sélections/],
+      ["ou est né zidane", /né à \*\*Marseille/],
+      ["quel numero porte mbappe", /n° 10/],
+      ["taille de cristiano ronaldo", /1,87 m/],
+      ["poste de griezmann", /joue \*\*/],
+      ["mbape carriere", /Kylian Mbappé/],
+      ["ronaldo combien de but", /Cristiano Ronaldo/],
+      ["compare haaland et mbappe", /Erling Haaland.*Kylian Mbappé|Kylian Mbappé.*Erling Haaland/s],
+      ["carrière de Silva", /Plusieurs joueurs correspondent/],
+      ["carrière de Jean Dupont", /Je ne trouve pas ce joueur/],
+      // --- Encyclopédie ---
+      ["Qui a gagné la Coupe du monde 1998 ?", /Coupe du monde 1998.*France/s],
+      ["coupe du monde 2026", /Espagne/],
+      ["combien de coupes du monde a la France", /2 Coupes du monde/],
+      ["qui a gagné l'euro 2024", /Espagne/],
+      ["combien d'euros a gagné l'Espagne", /4 Euros/],
+      ["qui a gagné la ligue des champions l'année dernière", /Paris Saint-Germain/],
+      ["combien de ligue des champions a gagné le psg", /2 Ligues des champions/],
+      ["Ballon d'Or 2025", /Dembélé/],
+      ["combien de ballons d'or a Messi", /8 Ballons d'Or/],
+      ["qui est le champion d'angleterre en titre", /Arsenal/],
+      ["qui a gagné la coupe de france 2026", /Lens/],
+      ["vainqueur de la ligue europa 2024", /Atalanta/],
+      ["palmarès du PSG", /14 titres de champion de France/],
+      ["stade de l'OM", /Vélodrome/],
+      ["Qui est Zidane ?", /Zinedine Zidane/],
+      ["parle moi de Guardiola", /Guardiola/],
+      ["C'est quoi le hors-jeu ?", /hors-jeu/i],
+      ["c'est quoi un tacle", /tacle/i],
+      ["c'est quoi un dribble", /dribble/i],
+      ["comment marche la VAR", /VAR/],
+      ["c'est quoi un 4-3-3", /systèmes de jeu/],
+      ["les grands derbys", /Classique/],
+      ["equipe de france", /Zidane/],
+      // --- Avis, honnêteté, conversation, hors sujet ---
+      ["qui est le meilleur joueur du monde", /question d'avis/],
+      ["qui est le meilleur joueur de l'histoire", /question d'avis.*Pelé/s],
+      ["quel est le meilleur club du monde", /question d'avis.*Real Madrid/s],
+      ["quel est le plus grand stade", /Camp Nou/],
+      ["quel est le score du match psg om", /pas les \*\*scores/],
+      ["resultat du dernier match du psg", /pas les \*\*scores/],
+      ["salaire de mbappe", /pas les \*\*salaires/],
+      ["combien vaut mbappe", /valeurs marchandes/],
+      ["prochain match de l'equipe de france", /calendrier des sélections/],
+      ["qui va gagner la ligue 1", /Je ne prédis pas le champion/],
+      ["bonjour", /Salut/],
+      ["salut ça va", /Ça va très bien/],
+      ["merci", /Avec plaisir/],
+      ["tu es qui", /assistant foot/],
+      ["qui est le président de la france", /spécialisé dans le football/],
+      ["donne moi une recette de crêpes", /spécialisé dans le football/],
+      ["raconte une blague", /spécialisé dans le football/],
+      // --- Deuxième série (formulations nouvelles) ---
+      ["c'est qui l'entraîneur de Liverpool", /entraîneur de \*\*Liverpool\*\*/],
+      ["capitaine du real", /capitaine de \*\*Real Madrid\*\*/],
+      ["numéro 7 de l'om", /n° 7.*Marseille/s],
+      ["les attaquants de l'om", /Attaquants/],
+      ["lens joue quand", /Prochain match de \*\*Lens\*\*/],
+      ["combien de points pour arsenal", /\*\*Arsenal\*\* a \*\*\d+ points/],
+      ["qui est relégable en premier league", /Bas du classement de \*\*Premier League/],
+      ["bas du classement bundesliga", /Bas du classement de \*\*Bundesliga/],
+      ["est ce que vinicius est blessé", /Vinícius Júnior/],
+      ["quels clubs pour zlatan", /Zlatan Ibrahimović/],
+      ["messi ou ronaldo", /Lionel Messi.*vs.*Cristiano Ronaldo/s],
+      ["qui est meilleur entre neymar et mbappe", /Neymar.*Kylian Mbappé|Kylian Mbappé.*Neymar/s],
+      ["dernier vainqueur de la coupe du monde", /2026.*Espagne/s],
+      ["champion d'italie en titre", /Inter Milan/],
+      ["qui a gagné la FA cup", /FA Cup 2026.*Manchester City/s],
+      ["ballon d'or l'année dernière", /Harry Kane/],
+      ["comment on gagne un match", /3 points/],
+      ["tu aimes le psg ?", /neutre/],
+      ["je veux parier sur psg om", /pas de conseils de paris/],
+      ["combien de spectateurs au parc des princes", /Paris Saint-Germain.*spectateurs/s],
+      ["qui a le plus de titres en france", /PSG \(14 titres\)/],
+      ["stats de Mbappé cette saison", /K\. Mbappé.*Real Madrid/s],
+      ["score probable de lille lyon", /Scores les plus probables/],
+      // --- Troisième série ---
+      ["qui coache chelsea", /entraîneur de \*\*Chelsea\*\*/],
+      ["qui est 1er en serie a", /en tête de \*\*Serie A\*\*/],
+      ["le psg est combientième", /\*\*1er\*\* de Ligue 1|est \*\*\d+e?r?\*\* de Ligue 1/],
+      ["c'est quoi un pressing", /Le pressing/],
+      ["c'est quoi la capitale de l'espagne", /spécialisé dans le football/],
+      ["combien de places au vélodrome", /Marseille.*spectateurs/s],
+      ["le meilleur gardien du monde", /question d'avis.*Yachine/s],
+      ["qui va gagner la ligue des champions", /Je ne prédis pas/],
+      ["où joue mbappé", /joue actuellement à \*\*Real Madrid/],
+      ["dans quel club joue Dembélé", /joue actuellement à \*\*Paris Saint-Germain/],
+      ["Saka est blessé ?", /Saka.*bless/s],
+      ["le président de l'om", /président de \*\*Marseille\*\*/],
+    ];
+
+    const box = document.getElementById("results");
+    const onlyKo = document.getElementById("only-ko");
+    onlyKo.addEventListener("change", () => box.classList.toggle("only-ko", onlyKo.checked));
+    const style = document.createElement("style");
+    style.textContent = ".only-ko .case:not(.ko) { display: none; }";
+    document.head.append(style);
+
+    (async () => {
+      await CareerBot.ready();
+      const startLeague = CURRENT_LEAGUE.id;
+      let ok = 0;
+      for (const [q, expect, forbid] of CASES) {
+        setLeague(startLeague);
+        let got;
+        try { got = LocalBot.reply(q); } catch (e) { got = "ERREUR : " + e.message; }
+        const pass = expect.test(got) && !(forbid && forbid.test(got));
+        if (pass) ok++;
+        const div = document.createElement("div");
+        div.className = "case" + (pass ? "" : " ko");
+        div.innerHTML = `<div class="q">${pass ? "✅" : "❌"} ${q}</div>` +
+          (pass ? "" : `<div class="exp">Attendu : ${expect}${forbid ? ` (sans ${forbid})` : ""}</div>`) +
+          `<div class="got">${got.slice(0, pass ? 140 : 400).replace(/</g, "&lt;")}${got.length > (pass ? 140 : 400) ? "…" : ""}</div>`;
+        box.append(div);
+      }
+      const summary = document.getElementById("summary");
+      summary.textContent = `${ok} / ${CASES.length} tests réussis (${Math.round(ok / CASES.length * 100)} %)`;
+      summary.style.color = ok === CASES.length ? "var(--ok)" : "var(--ko)";
+      window.TEST_RESULT = { ok, total: CASES.length };
+    })();
+  </script>
+</body>
+</html>

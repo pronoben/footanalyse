@@ -36,7 +36,7 @@ const CareerBot = (() => {
     if (!loading) {
       loading = fetch("js/careers.json")
         .then(r => (r.ok ? r.json() : null))
-        .then(d => { if (d) { DATA = d; buildIndex(); } })
+        .then(d => { if (d) { DATA = d; buildIndex(); addFirstNames(); } })
         .catch(() => {});
     }
     return loading;
@@ -60,11 +60,22 @@ const CareerBot = (() => {
         add(words.join(" "), i); // nom complet
         if (words.length >= 2) {
           add(words[words.length - 1], i); // nom de famille
+          // « Vinícius Júnior », « Neymar Jr » : le mot avant « junior » sert aussi de nom
+          if (STOP.has(words[words.length - 1])) add(words[words.length - 2], i);
           add(words.slice(-2).join(" "), i); // « van dijk », « de bruyne »
           if (words.length >= 3) add(words.slice(-3).join(" "), i);
           add(`${words[0]} ${words[words.length - 1]}`, i);
         }
       });
+    });
+  }
+
+  // Prénoms des joueurs très connus (« Zlatan », « Kylian ») : ajoutés après coup, pour les 400 plus connus
+  function addFirstNames() {
+    const top = DATA.players.map((p, i) => [i, fame(p)]).sort((a, b) => b[1] - a[1]).slice(0, 400);
+    top.forEach(([i]) => {
+      const w = clean(DATA.players[i].n).trim().split(" ");
+      if (w.length >= 2 && w[0].length >= 5 && !STOP.has(w[0]) && !INDEX.has(w[0])) INDEX.set(w[0], [i]);
     });
   }
 
@@ -82,7 +93,15 @@ const CareerBot = (() => {
     }
     // Si la clé est exactement le nom complet d'un joueur (« Pelé » et pas « Abedi Pele »), on le préfère
     const exact = best.filter(i => clean(DATA.players[i].n).trim() === [...INDEX.keys()].find(k => k.length === bestLen && INDEX.get(k).includes(i)));
-    return (exact.length ? exact : best).map(i => DATA.players[i]);
+    // On préfère le nom exact (« Pelé » plutôt qu'« Abedi Pele »)… sauf si un homonyme est bien plus connu
+    // (« Ronaldo » -> Cristiano Ronaldo plutôt que Ronaldo le Brésilien)
+    if (exact.length && exact.length < best.length) {
+      const fe = Math.max(...exact.map(i => fame(DATA.players[i])));
+      const fo = Math.max(...best.filter(i => !exact.includes(i)).map(i => fame(DATA.players[i])));
+      if (fo < 1.5 * fe) return exact.map(i => DATA.players[i]);
+    }
+    // Du plus connu au moins connu (Kylian avant Ethan Mbappé)
+    return best.map(i => DATA.players[i]).sort((a, b) => fame(b) - fame(a));
   }
 
   // ---------- Mise en forme ----------
@@ -151,6 +170,12 @@ const CareerBot = (() => {
         : `${p.n} a **${a} ans** (né le ${fmtDate(p.b)}).`;
     }
     if (/\btaille\b|\bmesure\b|\bgrand\b/.test(q) && p.h) return `${p.n} mesure **${p.h.toFixed(2).replace(".", ",")} m**.`;
+    if (/\bou joue\b|\bdans quel club\b|\bquel club\b|\bson club\b|\bil joue ou\b|\bjoue ou\b|\bjoue toujours\b|\bjoue encore\b/.test(q)) {
+      return p.c ? `${p.n} joue actuellement à **${p.c}**${p.no ? ` (n° ${p.no})` : ""}.` : `${p.n} n'a pas de club actuel dans mes données (retraité ou libre).`;
+    }
+    if (/\bnumero\b|\bmaillot\b|\bporte le\b/.test(q)) return p.no ? `${p.n} porte le **n° ${p.no}**${p.c ? ` à ${p.c}` : ""}.` : `Je n'ai pas le numéro de maillot de ${p.n}.`;
+    if (/\bou est ne\b|\blieu de naissance\b|\bne ou\b|\bvient d ou\b|\bd ou vient\b/.test(q) && p.bp) return `${p.n} est né à **${p.bp}**${p.b ? `, le ${fmtDate(p.b)}` : ""}.`;
+    if (/\bnationalite\b|\bquel pays\b|\bpour quel pays\b/.test(q) && p.nat) return `${p.n} joue pour la sélection de **${p.nat}**.`;
     if (/\bposte\b|\bjoue a quel\b|\bposition\b/.test(q) && p.p) return `${p.n} joue **${p.p.toLowerCase()}**.`;
     if (/\bselections?\b|\bcapes?\b|\ben equipe nationale\b|\bavec (la |le |l )?(france|bleus|selection)\b/.test(q) && nat) {
       return `${p.n} compte **${plural(nat[2], "sélection", "sélections")}** et **${plural(nat[3], "but", "buts")}** avec ${nat[1]} (${nat[0]}).`;
@@ -164,9 +189,11 @@ const CareerBot = (() => {
     return null;
   }
 
-  const WANTS = /\bcarriere\b|\bparcours\b|\bselections?\b|\bcapes?\b|\bquel age\b|\bage de\b|\bage a\b|\bil a quel age\b|\bne (le|en|ou|quand)\b|\bdate de naissance\b|\btaille\b|\bmesure\b|\bcombien de (matchs|buts|selections)\b|\bau total\b|\ben carriere\b|\bhistorique\b|\bfiche\b|\bbiographie\b|\bou a joue\b|\ba joue (a|au|pour|dans)\b|\banciens? clubs?\b|\bses clubs\b|\bquels clubs\b|\bforme a\b|\bposte de\b|\bquel poste\b|\bnationalite\b/;
+  const WANTS = /\bcarriere\b|\bparcours\b|\bselections?\b|\bcapes?\b|\bquel age\b|\bage de\b|\bage a\b|\bage\b|\bil a quel age\b|\bne (le|en|ou|quand)\b|\bou est ne\b|\blieu de naissance\b|\bdate de naissance\b|\btaille\b|\bmesure\b|\bcombien de (matchs?|buts?|selections?)\b|\bau total\b|\ben carriere\b|\bhistorique\b|\bfiche\b|\bbiographie\b|\bou a joue\b|\ba joue (a|au|pour|dans|ou)\b|\bjoue ou\b|\banciens? clubs?\b|\bses clubs\b|\bquels clubs\b|\bforme a\b|\bposte\b|\bquel poste\b|\bnationalite\b|\bnumero\b|\bmaillot\b|\bquel pays\b|\bou joue\b|\bdans quel club\b|\bquel club\b|\bjoue toujours\b|\bjoue encore\b|\bil joue ou\b/;
+  // « cette saison » = statistiques de la saison en cours (moteur des matchs), pas la carrière
+  const SEASON = /\bcette saison\b|\ben ce moment\b|\bactuellement\b|\bcette annee\b|\bcette journee\b|\bce week end\b|\ben championnat cette\b|\bdepuis le debut de (la )?saison\b/;
 
-  function wants(question) { return WANTS.test(clean(question)); }
+  function wants(question) { const q = clean(question); return WANTS.test(q) && !SEASON.test(q); }
 
   // force = true : la question parle forcément de carrière ; sinon (repli), on ne répond que si un joueur est reconnu
   // Notoriété approximative : sélections A (comptent double) + matchs de championnat
@@ -198,5 +225,37 @@ const CareerBot = (() => {
     return (d ? d + "\n\n" : "") + card(p) + note;
   }
 
-  return { load, ready: () => load(), wants, reply, find, count: () => (DATA ? DATA.players.length : 0) };
+  // Comparaison de deux joueurs (carrière + saison en cours si connue)
+  function compareText(a, b) {
+    const row = p => {
+      const t = totals(p), nat = seniorNat(p).pop();
+      return { age: age(p.b, p.d), apps: t.apps, goals: t.goals, caps: nat ? nat[2] : null, ng: nat ? nat[3] : null, club: p.c || "—", pos: p.p || "—" };
+    };
+    const A = row(a), B = row(b);
+    const line = (label, x, y, better = true) => {
+      const win = better && x != null && y != null && x !== y ? (x > y ? " ⬅️" : "") : "";
+      const win2 = better && x != null && y != null && x !== y ? (y > x ? " ⬅️" : "") : "";
+      return `- ${label} : **${x ?? "?"}**${win} vs **${y ?? "?"}**${win2}`;
+    };
+    const ratio = r => (r.apps ? (r.goals / r.apps).toFixed(2) : "?");
+    return `⚖️ **${a.n}** vs **${b.n}** (carrière, championnat uniquement)\n` +
+      `- Club : ${A.club} vs ${B.club}\n- Poste : ${A.pos} vs ${B.pos}\n` +
+      line("Âge", A.age, B.age, false) + "\n" + line("Matchs en club", A.apps, B.apps) + "\n" + line("Buts en club", A.goals, B.goals) + "\n" +
+      `- Buts par match : **${ratio(A)}** vs **${ratio(B)}**\n` + line("Sélections", A.caps, B.caps) + "\n" + line("Buts en sélection", A.ng, B.ng) +
+      "\n_Dire qui est « meilleur » reste une question d'avis : ces chiffres ne comptent ni les coupes ni l'Europe, et dépendent du poste._\n_Source : Wikipédia._";
+  }
+
+  const vocab = () => {
+    if (!DATA) return [];
+    const out = new Map(); // mot -> notoriété du joueur le plus connu qui porte ce nom
+    DATA.players.forEach(p => {
+      const f = fame(p);
+      clean(p.n).trim().split(" ").forEach(w => { if (w.length >= 5 && !STOP.has(w) && (out.get(w) || 0) < f) out.set(w, f); });
+    });
+    return [...out];
+  };
+  const byTitle = t => (DATA ? DATA.players.find(p => p.t === t) : null);
+
+  return { load, ready: () => load(), wants, reply, find, compareText, vocab, byTitle,
+    clubs: () => (DATA && DATA.clubs) || [], count: () => (DATA ? DATA.players.length : 0) };
 })();

@@ -242,14 +242,14 @@ const FOOT_KB = {
   // ---------- Championnats : 10 derniers champions connus + records ----------
   leagues: {
     L1: {
-      name: "Ligue 1", flag: "🇫🇷", re: /\bligue 1\b|\bl1\b|championnat de france|champions? de france/,
+      name: "Ligue 1", flag: "🇫🇷", re: /\bligue 1\b|\bl1\b|championnat de france|champions? de france|championnat francais|\ben france\b/,
       champions: [["2015-16", "PSG"], ["2016-17", "Monaco"], ["2017-18", "PSG"], ["2018-19", "PSG"], ["2019-20", "PSG"],
         ["2020-21", "Lille"], ["2021-22", "PSG"], ["2022-23", "PSG"], ["2023-24", "PSG"], ["2024-25", "PSG"], ["2025-26", "PSG (5e titre d'affilée)"]],
       records: "Clubs les plus titrés : **PSG (14 titres)**, Saint-Étienne (10), Marseille (9 en championnat professionnel, 10 en comptant le titre amateur de 1929), Nantes (8), Monaco (8), Lyon (7, d'affilée de 2002 à 2008).",
       format: "18 clubs, 34 journées. Les 2 derniers descendent en Ligue 2, le 16e joue un barrage contre un club de Ligue 2.",
     },
     PL: {
-      name: "Premier League", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", re: /\bpremier league\b|\bpl\b|championnat d angleterre|champions? d angleterre/,
+      name: "Premier League", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", re: /\bpremier league\b|\bpl\b|championnat d angleterre|champions? d angleterre|championnat anglais|\ben angleterre\b/,
       champions: [["2015-16", "Leicester (cote de 5000 contre 1 en début de saison)"], ["2016-17", "Chelsea"], ["2017-18", "Manchester City"],
         ["2018-19", "Manchester City"], ["2019-20", "Liverpool"], ["2020-21", "Manchester City"], ["2021-22", "Manchester City"],
         ["2022-23", "Manchester City"], ["2023-24", "Manchester City"], ["2024-25", "Liverpool"], ["2025-26", "Arsenal (1er titre depuis 2004)"]],
@@ -257,7 +257,7 @@ const FOOT_KB = {
       format: "20 clubs, 38 journées. Les 3 derniers descendent en Championship.",
     },
     LIGA: {
-      name: "Liga", flag: "🇪🇸", re: /\bliga\b|championnat d espagne|champions? d espagne/,
+      name: "Liga", flag: "🇪🇸", re: /\bliga\b|championnat d espagne|champions? d espagne|championnat espagnol|\ben espagne\b/,
       champions: [["2015-16", "FC Barcelone"], ["2016-17", "Real Madrid"], ["2017-18", "FC Barcelone"], ["2018-19", "FC Barcelone"],
         ["2019-20", "Real Madrid"], ["2020-21", "Atlético Madrid"], ["2021-22", "Real Madrid"], ["2022-23", "FC Barcelone"],
         ["2023-24", "Real Madrid"], ["2024-25", "FC Barcelone"], ["2025-26", "FC Barcelone"]],
@@ -265,7 +265,7 @@ const FOOT_KB = {
       format: "20 clubs, 38 journées. Les 3 derniers descendent en Segunda División.",
     },
     SA: {
-      name: "Serie A", flag: "🇮🇹", re: /\bserie a\b|championnat d italie|champions? d italie|\bscudetto\b/,
+      name: "Serie A", flag: "🇮🇹", re: /\bserie a\b|championnat d italie|champions? d italie|\bscudetto\b|championnat italien|\ben italie\b/,
       champions: [["2015-16", "Juventus"], ["2016-17", "Juventus"], ["2017-18", "Juventus"], ["2018-19", "Juventus"],
         ["2019-20", "Juventus (9e titre d'affilée, record)"], ["2020-21", "Inter Milan"], ["2021-22", "AC Milan"],
         ["2022-23", "Naples"], ["2023-24", "Inter Milan"], ["2024-25", "Naples"], ["2025-26", "Inter Milan"]],
@@ -273,7 +273,7 @@ const FOOT_KB = {
       format: "20 clubs, 38 journées. Les 3 derniers descendent en Serie B.",
     },
     BL: {
-      name: "Bundesliga", flag: "🇩🇪", re: /\bbundesliga\b|championnat d allemagne|champions? d allemagne/,
+      name: "Bundesliga", flag: "🇩🇪", re: /\bbundesliga\b|championnat d allemagne|champions? d allemagne|championnat allemand|\ben allemagne\b/,
       champions: [["2015-16", "Bayern Munich"], ["2016-17", "Bayern Munich"], ["2017-18", "Bayern Munich"], ["2018-19", "Bayern Munich"],
         ["2019-20", "Bayern Munich"], ["2020-21", "Bayern Munich"], ["2021-22", "Bayern Munich"], ["2022-23", "Bayern Munich (11e titre d'affilée, record)"],
         ["2023-24", "Leverkusen (invaincu toute la saison)"], ["2024-25", "Bayern Munich"], ["2025-26", "Bayern Munich"]],
@@ -281,6 +281,17 @@ const FOOT_KB = {
       format: "18 clubs, 34 journées. Les 2 derniers descendent en 2. Bundesliga, le 16e joue un barrage.",
     },
   },
+
+  // ---------- Coupes : vainqueurs par année (finale) ----------
+  cups: [
+    { n: "Coupe de France", re: /coupe de france/, w: { 2019: "Rennes (contre le PSG, aux tirs au but)", 2020: "PSG", 2021: "PSG", 2022: "Nantes", 2023: "Toulouse", 2024: "PSG", 2025: "PSG (3-0 contre Reims)", 2026: "Lens (3-1 contre Nice), 1er titre du club" } },
+    { n: "FA Cup", re: /fa cup|coupe d angleterre/, w: { 2023: "Manchester City", 2024: "Manchester United", 2025: "Crystal Palace (1-0 contre Manchester City)", 2026: "Manchester City" } },
+    { n: "Coupe du Roi", re: /copa del rey|coupe du roi|coupe d espagne/, w: { 2023: "Real Madrid", 2024: "Athletic Bilbao", 2025: "FC Barcelone", 2026: "Real Sociedad" } },
+    { n: "Coupe d'Italie", re: /coppa italia|coupe d italie/, w: { 2023: "Inter Milan", 2024: "Juventus", 2025: "Bologne", 2026: "Inter Milan" } },
+    { n: "Coupe d'Allemagne", re: /dfb pokal|coupe d allemagne/, w: { 2023: "RB Leipzig", 2024: "Bayer Leverkusen", 2025: "VfB Stuttgart", 2026: "Bayern Munich" } },
+    { n: "Ligue Europa", re: /ligue europa|europa league|\bc3\b|coupe uefa/, w: { 2021: "Villarreal", 2022: "Eintracht Francfort", 2023: "Séville", 2024: "Atalanta (3-0 contre Leverkusen)", 2025: "Tottenham", 2026: "Aston Villa (3-0 contre Fribourg)" } },
+    { n: "Ligue Conférence", re: /conference league|ligue conference|\bc4\b/, w: { 2022: "AS Rome", 2023: "West Ham", 2024: "Olympiakos", 2025: "Chelsea", 2026: "Crystal Palace (1-0 contre le Rayo Vallecano)" } },
+  ],
 
   // ---------- Sujets : règles, compétitions, tactique, vocabulaire, records ----------
   // noTeam : on ne répond pas si une équipe est citée (ex. « les remplaçants du PSG » = compo)
@@ -474,6 +485,19 @@ const FOOT_KB = {
       "- **Aile de pigeon** : frapper le ballon avec l'extérieur du talon, souvent en l'air.\n- **Talonnade** : passe ou tir du talon.\n- **Rabona** (coup du foulard) : frapper en croisant la jambe de frappe derrière la jambe d'appui.\n" +
       "- **Lucarne** : la partie haute du but, dans l'angle (« mettre en lucarne »).\n- **Une-deux** : passe à un partenaire qui remet aussitôt.\n- **Contre-pied** : envoyer le ballon du côté opposé à celui où part le gardien.\n" +
       "- **Reprise de volée** : frapper le ballon avant qu'il ne touche le sol.\n- **Frappe enroulée** : tir avec effet, de l'intérieur du pied, qui contourne le gardien." },
+    { k: /\btacles?\b|\btacler\b/, t: "Le tacle", a: "Un **tacle** est une action défensive pour prendre le ballon à l'adversaire avec le pied, souvent en glissant au sol. Il est régulier si le joueur touche d'abord le ballon ; un tacle par derrière, les pieds en avant ou dangereux est sanctionné d'une faute, voire d'un carton rouge." },
+    { k: /\bdribbles?\b|\bdribbler\b/, t: "Le dribble", a: "Le **dribble** consiste à garder le ballon en mouvement pour éliminer un adversaire sans faire de passe (crochet, feinte de corps, passement de jambes, petit pont…). Les grands dribbleurs : Maradona, Ronaldinho, Messi, Neymar." },
+    { k: /\bcentres?\b(?! ville| de formation)|\bcentrer\b/, noTeam: true, t: "Le centre", a: "Un **centre** est une passe aérienne ou à ras de terre envoyée depuis un côté du terrain vers la surface de réparation, pour un coéquipier qui reprend de la tête ou du pied." },
+    { k: /contre son camp|\bcsc\b/, t: "Le but contre son camp", a: "Un **but contre son camp** (CSC) est marqué par un joueur dans son propre but, sans le faire exprès (déviation, mauvaise passe). Il compte pour l'équipe adverse, mais n'est attribué à aucun buteur adverse." },
+    { k: /\ble mur\b|\bun mur\b|faire le mur/, t: "Le mur", a: "Le **mur** est la rangée de défenseurs placée à **9,15 m** du ballon sur un coup franc, pour protéger le but. Depuis 2019, les attaquants doivent se tenir à au moins 1 m du mur." },
+    { k: /\bsimulation\b|\bplongeon\b|\bsimuler\b/, t: "La simulation", a: "La **simulation** consiste à faire semblant d'avoir subi une faute (plongeon) pour obtenir un coup franc ou un penalty. Elle est sanctionnée d'un **carton jaune**." },
+    { k: /\bfautes?\b/, noTeam: true, t: "La faute", a: "Une **faute** est un contact irrégulier (croche-pied, poussée, tirage de maillot, charge dangereuse…) ou une main. Elle donne un **coup franc** à l'adversaire, ou un **penalty** si elle est commise dans la surface de réparation du fautif. Selon la gravité : carton jaune ou rouge." },
+    { k: /\bpoteau\b|\btransversale\b|\bbarre\b/, noTeam: true, t: "Les poteaux et la barre", a: "Le but est formé de deux **poteaux** verticaux (7,32 m d'écart) et d'une **barre transversale** (2,44 m de haut). Un ballon qui touche le poteau ou la barre reste en jeu s'il revient sur le terrain." },
+    { k: /\bpossession\b/, noTeam: true, t: "La possession", a: "La **possession** est le pourcentage de temps où une équipe a le ballon pendant un match. Avoir plus la possession ne garantit pas de gagner : une équipe peut défendre et marquer en contre-attaque." },
+    { k: /\bfair play\b(?! financier)/, t: "Le fair-play", a: "Le **fair-play**, c'est le respect de l'adversaire, de l'arbitre et des règles : rendre le ballon à l'adversaire après une blessure, ne pas simuler, féliciter l'adversaire… La FIFA décerne chaque année un prix du fair-play." },
+    { k: /\b(c est quoi|qu est ce qu|role)\b.*\b(entraineur|selectionneur|capitaine)\b/, noTeam: true, t: "Entraîneur, sélectionneur et capitaine", a: "- L'**entraîneur** dirige un club : entraînements, choix des joueurs, tactique.\n- Le **sélectionneur** dirige une équipe nationale et choisit les joueurs convoqués.\n- Le **capitaine** porte le brassard : il représente l'équipe auprès de l'arbitre et fait le tirage au sort avant le match." },
+    { k: /\btete\b|jeu de tete|coup de tete/, noTeam: true, t: "Le jeu de tête", a: "Le **jeu de tête** consiste à frapper le ballon avec le front, pour marquer, dégager ou passer. Les grands spécialistes : Cristiano Ronaldo, Zlatan Ibrahimović, Olivier Giroud. Chez les jeunes, les têtes sont limitées à l'entraînement pour protéger la santé." },
+    { k: /\btirs?\b(?! au but)|\bfrappes?\b/, noTeam: true, t: "Le tir", a: "Un **tir** (ou frappe) est une tentative de marquer. On distingue les **tirs cadrés** (qui vont vers le but) et non cadrés. Types de frappe : du coup de pied (puissance), de l'intérieur (précision, effet), enroulée, piquée, reprise de volée." },
     { k: /\bderbys?\b|\bclassico\b|\bclasico\b|le classique|rivalite|grandes affiches/, t: "Les grands derbys", a:
       "- 🇫🇷 **Le Classique** : PSG – OM. **Derby du Nord** : Lens – Lille. **Derby rhodanien** : Lyon – Saint-Étienne. **Derby breton** : Rennes – Nantes, Brest, Lorient…\n" +
       "- 🇪🇸 **El Clásico** : Real Madrid – FC Barcelone. **Derbi madrileño** : Real – Atlético. **Derbi sevillano** : Séville – Betis.\n" +

@@ -19,8 +19,11 @@ const EncycloBot = (() => {
   const SOURCE_NOTE = `\n\n_Encyclopédie du site, infos arrêtées à la ${KB.until}._`;
 
   // Années citées : « 2018 », « en 98 », « 2020-2021 » / « 2020-21 » (= saison qui se termine en 2021)
-  function yearsIn(q) {
+  // « l'année dernière », « champion en titre », « la dernière finale » -> dernière année connue
+  const RELATIVE = /\b(l annee derniere|la saison derniere|derniere edition|derniere finale|dernier vainqueur|derniers vainqueurs|dernier champion|cette annee|plus recent|recemment|champion en titre|tenant du titre|tenants du titre|en titre|la derniere|le dernier)\b/;
+  function yearsIn(q, latest = null) {
     const out = [];
+    if (latest && RELATIVE.test(q) && !/\b(18|19|20)\d\d\b/.test(q)) return [latest];
     const season = q.match(/\b(19|20)(\d\d) (?:(19|20)?(\d\d))\b/);
     if (season) {
       const end = Number((season[3] || season[1]) + season[4]);
@@ -41,7 +44,7 @@ const EncycloBot = (() => {
 
   // ---------- Coupe du monde / Euro ----------
   function cupAnswer(q, rows, label, labelPlural, pastWord) {
-    const years = yearsIn(q);
+    const years = yearsIn(q, rows[rows.length - 1][0]);
     if (years.length) {
       const y = years[0];
       const row = rows.find(r => r[0] === y);
@@ -81,7 +84,7 @@ const EncycloBot = (() => {
 
   // ---------- Ligue des champions ----------
   function uclAnswer(q) {
-    const years = yearsIn(q);
+    const years = yearsIn(q, KB.ucl[KB.ucl.length - 1][0]);
     if (years.length) {
       const y = years[0];
       const row = KB.ucl.find(r => r[0] === y);
@@ -111,7 +114,7 @@ const EncycloBot = (() => {
 
   // ---------- Ballon d'Or ----------
   function ballonDorAnswer(q) {
-    const years = yearsIn(q);
+    const years = yearsIn(q, KB.ballonDor[KB.ballonDor.length - 1][0]);
     if (years.length) {
       const y = years[0];
       if (y === 2020) return "Pas de Ballon d'Or en **2020** : il a été annulé à cause du Covid-19.";
@@ -145,7 +148,7 @@ const EncycloBot = (() => {
 
   // ---------- Champions des 5 championnats ----------
   function leagueAnswer(q, lg) {
-    const years = yearsIn(q);
+    const years = yearsIn(q, Number(lg.champions[lg.champions.length - 1][0].slice(0, 4)) + 1);
     if (years.length) {
       const y = years[0];
       const season = `${y - 1}-${String(y).slice(2)}`;
@@ -200,6 +203,20 @@ const EncycloBot = (() => {
       const isUcl = /ligue des champions|champions league|\bc1\b|coupe des clubs champions|\bldc\b/.test(q);
       const uclFormat = /format|fonctionne|marche|deroule|phase de ligue|nouvelle formule|combien d equipes|qualifi/.test(q);
       if (isUcl && !uclFormat && !/feminin/.test(q)) return uclAnswer(q) + SOURCE_NOTE;
+    }
+
+    // 1 bis. Coupes nationales et coupes d'Europe : vainqueur d'une année précise
+    const cup = KB.cups.find(c => c.re.test(q));
+    if (cup && !future) {
+      const ys = Object.keys(cup.w).map(Number);
+      // « Qui a gagné la FA Cup ? » sans année = dernier vainqueur connu
+      const yy = yearsIn(q, Math.max(...ys)).length ? yearsIn(q, Math.max(...ys))
+        : (/\b(qui a gagne|vainqueur|gagnant|a remporte)\b/.test(q) ? [Math.max(...ys)] : []);
+      if (yy.length) {
+        const y = yy[0];
+        return cup.w[y] ? `🏆 **${cup.n} ${y}** : **${cup.w[y]}**.` + SOURCE_NOTE
+          : `Je n'ai le vainqueur de la ${cup.n} que pour ${Math.min(...ys)} à ${Math.max(...ys)}.` + SOURCE_NOTE;
+      }
     }
 
     // 2. Champions des championnats (« qui a gagné la Ligue 1 en 2021 ? », « palmarès de la Serie A »)

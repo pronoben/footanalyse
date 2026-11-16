@@ -238,18 +238,29 @@ const LocalBot = (() => {
     for (const id of LEAGUE_ORDER) {
       if (id !== cur && findTeams(question, LEAGUES[id].teams).length) return id;
     }
-    if (PlayerBot.find(question).length) return cur;
-    for (const id of LEAGUE_ORDER) {
-      if (id === cur) continue;
+    // Joueur cité : s'il existe dans plusieurs championnats (Kylian et Ethan Mbappé),
+    // on choisit celui qui a les meilleures stats cette saison
+    let bestLg = null, bestScore = -1;
+    [cur, ...LEAGUE_ORDER.filter(id => id !== cur)].forEach(id => {
       setLeague(id);
-      const hit = PlayerBot.find(question).length > 0;
-      setLeague(cur);
-      if (hit) return id;
-    }
-    return cur;
+      PlayerBot.find(question).forEach(e => {
+        const st = e.stats || {};
+        const score = (st.total ?? ((st.goals || 0) + (st.assists || 0))) || 0;
+        if (score > bestScore) { bestScore = score; bestLg = id; }
+      });
+    });
+    setLeague(cur);
+    return bestLg || cur;
   }
 
   function reply(question) {
+    // Aiguillage (fautes de frappe, politesse, infos que le site n'a pas, effectifs, blessures…) : js/chat-router.js
+    const hasRouter = typeof ChatRouter !== "undefined";
+    if (hasRouter) {
+      const pre = ChatRouter.before(question);
+      if (pre && pre.answer) return pre.answer;
+      if (pre && pre.question) question = pre.question; // question corrigée
+    }
     // Carrière d'un joueur (« carrière de Mbappé », « combien de sélections pour Griezmann ? ») : js/chat-careers.js
     const hasCareers = typeof CareerBot !== "undefined";
     if (hasCareers && CareerBot.wants(question) && (CareerBot.count() === 0 || CareerBot.find(question).length)) {
@@ -274,6 +285,8 @@ const LocalBot = (() => {
       const career = CareerBot.reply(question, CareerBot.wants(question));
       if (career) return career;
     }
+    // Toujours incompris : réponse claire plutôt que la longue aide générale
+    if (hasRouter && answer.startsWith(HELP)) return ChatRouter.fallback(question);
     return prefix + answer + (lastSubject === "player" && !findTeams(question).length ? namesakesNote(question) : "");
   }
 
