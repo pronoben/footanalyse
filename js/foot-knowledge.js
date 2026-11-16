@@ -3,15 +3,36 @@
    ---------------------------------------------------------
    Palmarès, Ballon d'Or, règles, tactique, vocabulaire,
    légendes, entraîneurs et fiches des clubs.
-   Infos arrêtées à la fin de la saison 2024-2025 (+ Ballon d'Or
-   2025). Les résultats plus récents ne sont pas enregistrés.
+   Infos arrêtées à la fin de la saison 2025-2026 (Coupe du monde
+   2026 et Ballon d'Or 2026 compris), vérifiées le 16/11/2026 sur
+   Wikipédia :
+     https://en.wikipedia.org/wiki/List_of_FIFA_World_Cup_finals
+     https://en.wikipedia.org/wiki/2026_FIFA_World_Cup
+     https://en.wikipedia.org/wiki/List_of_UEFA_European_Championship_finals
+     https://en.wikipedia.org/wiki/List_of_European_Cup_and_UEFA_Champions_League_finals
+     https://en.wikipedia.org/wiki/2026_UEFA_Champions_League_final
+     https://en.wikipedia.org/wiki/2026_UEFA_Europa_League_final
+     https://en.wikipedia.org/wiki/2026_UEFA_Conference_League_final
+     https://en.wikipedia.org/wiki/Ballon_d%27Or
+     https://en.wikipedia.org/wiki/Ballon_d%27Or_F%C3%A9minin
+     https://en.wikipedia.org/wiki/List_of_French_football_champions
+     https://en.wikipedia.org/wiki/List_of_English_football_champions
+     https://en.wikipedia.org/wiki/List_of_Spanish_football_champions
+     https://en.wikipedia.org/wiki/List_of_Italian_football_champions
+     https://en.wikipedia.org/wiki/List_of_German_football_champions
+     https://en.wikipedia.org/wiki/2025%E2%80%9326_Ligue_1 (+ Premier League, La Liga, Serie A, Bundesliga)
+     https://en.wikipedia.org/wiki/2025%E2%80%9326_Coupe_de_France
+     https://en.wikipedia.org/wiki/2026%E2%80%9327_Ligue_1 (+ les 4 autres : stades des clubs)
+     https://en.wikipedia.org/wiki/France_national_football_team
+     Pages Wikipédia de Guardiola, Ancelotti, Mourinho, Messi, Cristiano Ronaldo
+   Les règles du jeu suivent les Lois du jeu de l'IFAB (theifab.com).
    Les expressions régulières s'appliquent à la question
    « nettoyée » : minuscules, sans accents, ponctuation et tirets
    remplacés par des espaces (ex. « hors-jeu » -> « hors jeu »).
    ========================================================= */
 
 const FOOT_KB = {
-  until: "fin de la saison 2024-2025",
+  until: "fin de la saison 2025-2026 (vérifiées sur Wikipédia le 16/11/2026)",
 
   // ---------- Coupe du monde : [année, vainqueur, pays hôte, finaliste, score de la finale] ----------
   worldCup: [
@@ -37,6 +58,7 @@ const FOOT_KB = {
     [2014, "Allemagne", "Brésil", "Argentine", "1-0 a.p."],
     [2018, "France", "Russie", "Croatie", "4-2"],
     [2022, "Argentine", "Qatar", "France", "3-3, 4-2 aux tirs au but"],
+    [2026, "Espagne", "États-Unis, Canada et Mexique", "Argentine", "1-0 a.p."],
   ],
 
   // ---------- Euro : [année, vainqueur, pays hôte, finaliste, score] ----------
@@ -99,8 +121,10 @@ const FOOT_KB = {
     [2011, "FC Barcelone"], [2012, "Chelsea"], [2013, "Bayern Munich"], [2014, "Real Madrid"], [2015, "FC Barcelone"],
     [2016, "Real Madrid"], [2017, "Real Madrid"], [2018, "Real Madrid"], [2019, "Liverpool"], [2020, "Bayern Munich"],
     [2021, "Chelsea"], [2022, "Real Madrid"], [2023, "Manchester City"], [2024, "Real Madrid"], [2025, "Paris Saint-Germain"],
+    [2026, "Paris Saint-Germain"],
   ],
   uclFinals: {
+    2026: "PSG – Arsenal 1-1 a.p., 4-3 aux tirs au but à Budapest (Havertz pour Arsenal, Dembélé sur penalty pour Paris)",
     2025: "PSG – Inter Milan 5-0 à Munich (plus large score de l'histoire en finale)",
     2024: "Real Madrid – Dortmund 2-0 à Wembley",
     2023: "Manchester City – Inter Milan 1-0 à Istanbul",
@@ -185,7 +209,7 @@ const FOOT_KB = {
     [2018, "Luka Modrić", "Croatie", "Real Madrid"], [2019, "Lionel Messi", "Argentine", "FC Barcelone"],
     [2021, "Lionel Messi", "Argentine", "PSG"], [2022, "Karim Benzema", "France", "Real Madrid"],
     [2023, "Lionel Messi", "Argentine", "Inter Miami"], [2024, "Rodri", "Espagne", "Manchester City"],
-    [2025, "Ousmane Dembélé", "France", "PSG"],
+    [2025, "Ousmane Dembélé", "France", "PSG"], [2026, "Harry Kane", "Angleterre", "Bayern Munich"],
   ],
   // Mots-clés pour reconnaître un lauréat (« combien de Ballons d'Or a Messi ? »)
   ballonDorNames: {
@@ -211,6 +235,7 @@ const FOOT_KB = {
     "Thierry Henry": /\bhenry\b/,
     "Kylian Mbappé": /\bmbappe\b/,
     "Erling Haaland": /\bhaaland\b/,
+    "Harry Kane": /\bkane\b/,
     "Robert Lewandowski": /\blewandowski\b/,
   },
 
@@ -219,40 +244,40 @@ const FOOT_KB = {
     L1: {
       name: "Ligue 1", flag: "🇫🇷", re: /\bligue 1\b|\bl1\b|championnat de france|champions? de france/,
       champions: [["2015-16", "PSG"], ["2016-17", "Monaco"], ["2017-18", "PSG"], ["2018-19", "PSG"], ["2019-20", "PSG"],
-        ["2020-21", "Lille"], ["2021-22", "PSG"], ["2022-23", "PSG"], ["2023-24", "PSG"], ["2024-25", "PSG"]],
-      records: "Clubs les plus titrés : **PSG (13 titres)**, Saint-Étienne (10), Marseille (9), Nantes (8), Monaco (8), Lyon (7, dont 7 d'affilée de 2002 à 2008).",
+        ["2020-21", "Lille"], ["2021-22", "PSG"], ["2022-23", "PSG"], ["2023-24", "PSG"], ["2024-25", "PSG"], ["2025-26", "PSG (5e titre d'affilée)"]],
+      records: "Clubs les plus titrés : **PSG (14 titres)**, Saint-Étienne (10), Marseille (9 en championnat professionnel, 10 en comptant le titre amateur de 1929), Nantes (8), Monaco (8), Lyon (7, d'affilée de 2002 à 2008).",
       format: "18 clubs, 34 journées. Les 2 derniers descendent en Ligue 2, le 16e joue un barrage contre un club de Ligue 2.",
     },
     PL: {
       name: "Premier League", flag: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", re: /\bpremier league\b|\bpl\b|championnat d angleterre|champions? d angleterre/,
       champions: [["2015-16", "Leicester (cote de 5000 contre 1 en début de saison)"], ["2016-17", "Chelsea"], ["2017-18", "Manchester City"],
         ["2018-19", "Manchester City"], ["2019-20", "Liverpool"], ["2020-21", "Manchester City"], ["2021-22", "Manchester City"],
-        ["2022-23", "Manchester City"], ["2023-24", "Manchester City"], ["2024-25", "Liverpool"]],
-      records: "Clubs les plus titrés en Angleterre : **Manchester United (20 titres)** et **Liverpool (20)**, Arsenal (13), Manchester City (10), Everton (9). Manchester City a gagné 4 titres d'affilée (2021 à 2024), un record.",
+        ["2022-23", "Manchester City"], ["2023-24", "Manchester City"], ["2024-25", "Liverpool"], ["2025-26", "Arsenal (1er titre depuis 2004)"]],
+      records: "Clubs les plus titrés en Angleterre : **Manchester United (20 titres)** et **Liverpool (20)**, Arsenal (14), Manchester City (10), Everton (9). Manchester City a gagné 4 titres d'affilée (2021 à 2024), un record.",
       format: "20 clubs, 38 journées. Les 3 derniers descendent en Championship.",
     },
     LIGA: {
       name: "Liga", flag: "🇪🇸", re: /\bliga\b|championnat d espagne|champions? d espagne/,
       champions: [["2015-16", "FC Barcelone"], ["2016-17", "Real Madrid"], ["2017-18", "FC Barcelone"], ["2018-19", "FC Barcelone"],
         ["2019-20", "Real Madrid"], ["2020-21", "Atlético Madrid"], ["2021-22", "Real Madrid"], ["2022-23", "FC Barcelone"],
-        ["2023-24", "Real Madrid"], ["2024-25", "FC Barcelone"]],
-      records: "Clubs les plus titrés : **Real Madrid (36 titres)**, FC Barcelone (28), Atlético Madrid (11), Athletic Bilbao (8), Valence (6).",
+        ["2023-24", "Real Madrid"], ["2024-25", "FC Barcelone"], ["2025-26", "FC Barcelone"]],
+      records: "Clubs les plus titrés : **Real Madrid (36 titres)**, FC Barcelone (29), Atlético Madrid (11), Athletic Bilbao (8), Valence (6).",
       format: "20 clubs, 38 journées. Les 3 derniers descendent en Segunda División.",
     },
     SA: {
       name: "Serie A", flag: "🇮🇹", re: /\bserie a\b|championnat d italie|champions? d italie|\bscudetto\b/,
       champions: [["2015-16", "Juventus"], ["2016-17", "Juventus"], ["2017-18", "Juventus"], ["2018-19", "Juventus"],
         ["2019-20", "Juventus (9e titre d'affilée, record)"], ["2020-21", "Inter Milan"], ["2021-22", "AC Milan"],
-        ["2022-23", "Naples"], ["2023-24", "Inter Milan"], ["2024-25", "Naples"]],
-      records: "Clubs les plus titrés : **Juventus (36 titres)**, Inter Milan (20), AC Milan (19), Genoa (9), Torino (7), Bologne (7), Pro Vercelli (7). Le titre de champion s'appelle le *Scudetto*.",
+        ["2022-23", "Naples"], ["2023-24", "Inter Milan"], ["2024-25", "Naples"], ["2025-26", "Inter Milan"]],
+      records: "Clubs les plus titrés : **Juventus (36 titres)**, Inter Milan (21), AC Milan (19), Genoa (9), Torino (7), Bologne (7), Pro Vercelli (7). Le titre de champion s'appelle le *Scudetto*.",
       format: "20 clubs, 38 journées. Les 3 derniers descendent en Serie B.",
     },
     BL: {
       name: "Bundesliga", flag: "🇩🇪", re: /\bbundesliga\b|championnat d allemagne|champions? d allemagne/,
       champions: [["2015-16", "Bayern Munich"], ["2016-17", "Bayern Munich"], ["2017-18", "Bayern Munich"], ["2018-19", "Bayern Munich"],
         ["2019-20", "Bayern Munich"], ["2020-21", "Bayern Munich"], ["2021-22", "Bayern Munich"], ["2022-23", "Bayern Munich (11e titre d'affilée, record)"],
-        ["2023-24", "Leverkusen (invaincu toute la saison)"], ["2024-25", "Bayern Munich"]],
-      records: "Clubs les plus titrés : **Bayern Munich (34 titres de champion d'Allemagne)**, Nuremberg (9), Dortmund (8), Schalke 04 (7), Hambourg (6), Mönchengladbach (5), Stuttgart (5).",
+        ["2023-24", "Leverkusen (invaincu toute la saison)"], ["2024-25", "Bayern Munich"], ["2025-26", "Bayern Munich"]],
+      records: "Clubs les plus titrés : **Bayern Munich (35 titres de champion d'Allemagne, dont 34 en Bundesliga)**, Nuremberg (9), Dortmund (8), Schalke 04 (7), Hambourg (6), Mönchengladbach (5), Stuttgart (5).",
       format: "18 clubs, 34 journées. Les 2 derniers descendent en 2. Bundesliga, le 16e joue un barrage.",
     },
   },
@@ -338,8 +363,8 @@ const FOOT_KB = {
       "- Les **8 premiers** vont directement en huitièmes de finale.\n- Du **9e au 24e** : barrages aller-retour pour les 8 autres places.\n- Du 25e au 36e : éliminés (pas de repêchage en Ligue Europa).\n" +
       "- Ensuite : huitièmes, quarts, demies en aller-retour, puis **finale sur un match**." },
     { k: /ligue europa|europa league|\bc3\b|conference league|ligue conference|\bc4\b|coupe uefa/, t: "Ligue Europa et Ligue Conférence", a:
-      "- La **Ligue Europa** (C3, ex-Coupe UEFA) est la 2e coupe d'Europe des clubs. Recordman : **Séville (7 titres)**. Vainqueurs récents : Atalanta (2024), **Tottenham (2025)**.\n" +
-      "- La **Ligue Conférence** (C4), créée en 2021, est la 3e. Vainqueurs : AS Rome (2022), West Ham (2023), Olympiakos (2024), **Chelsea (2025)**.\n" +
+      "- La **Ligue Europa** (C3, ex-Coupe UEFA) est la 2e coupe d'Europe des clubs. Recordman : **Séville (7 titres)**. Vainqueurs récents : Atalanta (2024), Tottenham (2025), **Aston Villa (2026**, 3-0 contre Fribourg).\n" +
+      "- La **Ligue Conférence** (C4), créée en 2021, est la 3e. Vainqueurs : AS Rome (2022), West Ham (2023), Olympiakos (2024), Chelsea (2025), **Crystal Palace (2026**, 1-0 contre le Rayo Vallecano, but de Mateta).\n" +
       "Les deux ont le même format que la Ligue des champions depuis 2024 (phase de ligue unique)." },
     { k: /coupe du monde des clubs|mondial des clubs/, t: "La Coupe du monde des clubs", a:
       "Depuis **2025**, la Coupe du monde des clubs FIFA se joue tous les 4 ans avec **32 clubs**, comme une Coupe du monde. La 1re édition, aux États-Unis, a été gagnée par **Chelsea**, 3-0 en finale contre le **PSG**. " +
@@ -347,15 +372,15 @@ const FOOT_KB = {
     { k: /ligue des nations|nations league/, t: "La Ligue des nations", a:
       "Compétition de l'UEFA entre sélections, créée en 2018. Vainqueurs : **Portugal (2019)**, **France (2021)**, **Espagne (2023)**, **Portugal (2025)**." },
     { k: /coupe de france/, t: "La Coupe de France", a:
-      "Créée en 1917, ouverte à tous les clubs (même amateurs). Recordman : **PSG (16 titres)**, devant Marseille (10). Vainqueurs récents : Rennes (2019), PSG (2020, 2021), Nantes (2022), Toulouse (2023), PSG (2024, 2025). Finale au Stade de France." },
+      "Créée en 1917, ouverte à tous les clubs (même amateurs). Recordman : **PSG (16 titres)**, devant Marseille (10). Vainqueurs récents : Nantes (2022), Toulouse (2023), PSG (2024, 2025), **Lens (2026**, 3-1 contre Nice, 1er titre du club). Finale au Stade de France." },
     { k: /fa cup|coupe d angleterre/, t: "La FA Cup", a:
-      "La plus vieille compétition de football du monde (1871-1872). Recordman : **Arsenal (14 titres)**. Vainqueurs récents : Manchester City (2023), Manchester United (2024), **Crystal Palace (2025, 1er titre majeur du club)**. Finale à Wembley." },
+      "La plus vieille compétition de football du monde (1871-1872). Recordman : **Arsenal (14 titres)**. Vainqueurs récents : Manchester United (2024), Crystal Palace (2025, 1er titre majeur du club), **Manchester City (2026)**. Finale à Wembley." },
     { k: /copa del rey|coupe du roi|coupe d espagne/, t: "La Coupe du Roi", a:
-      "La coupe d'Espagne. Recordman : **FC Barcelone (32 titres)**, devant l'Athletic Bilbao (24). Vainqueurs récents : Real Madrid (2023), Athletic Bilbao (2024), FC Barcelone (2025)." },
+      "La coupe d'Espagne. Recordman : **FC Barcelone (32 titres)**, devant l'Athletic Bilbao (24). Vainqueurs récents : Athletic Bilbao (2024), FC Barcelone (2025), **Real Sociedad (2026)**." },
     { k: /coppa italia|coupe d italie/, t: "La Coupe d'Italie", a:
-      "Recordman : **Juventus (15 titres)**. Vainqueurs récents : Inter Milan (2023), Juventus (2024), **Bologne (2025)**." },
+      "Recordman : **Juventus (15 titres)**. Vainqueurs récents : Juventus (2024), Bologne (2025), **Inter Milan (2026)**." },
     { k: /dfb pokal|coupe d allemagne/, t: "La Coupe d'Allemagne", a:
-      "La DFB-Pokal. Recordman : **Bayern Munich (20 titres)**. Vainqueurs récents : Leipzig (2023), Leverkusen (2024), **Stuttgart (2025)**." },
+      "La DFB-Pokal. Recordman : **Bayern Munich (21 titres)**. Vainqueurs récents : Leverkusen (2024), Stuttgart (2025), **Bayern Munich (2026)**." },
     { k: /^(?!.*\b(classement|qui|quels?|quelles?|actuel)\b).*(relegation|relegue|descente|descendre en|promotion|promu|monter en|barrages?)/, noTeam: true, t: "Montées et descentes", a:
       "Dans les grands championnats, les derniers du classement **descendent** en 2e division et sont remplacés par les meilleurs de 2e division :\n" +
       "- 🇫🇷 Ligue 1 (18 clubs) : 2 descentes directes + 1 barrage (16e contre un club de Ligue 2).\n- 🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League (20) : 3 descentes.\n- 🇪🇸 Liga (20) : 3 descentes.\n" +
@@ -370,12 +395,12 @@ const FOOT_KB = {
       "- **Philippe Coutinho** : environ 135 M€ (Liverpool → Barcelone, 2018) ;\n- **João Félix** : 127 M€ (Benfica → Atlético, 2019).\n_Montants souvent cités, bonus compris ; ils varient selon les sources._" },
     { k: /fair play financier|\bfpf\b|dncg/, t: "Le fair-play financier", a:
       "Le **fair-play financier** de l'UEFA oblige les clubs à ne pas dépenser beaucoup plus qu'ils ne gagnent, sous peine d'amendes ou d'exclusion des coupes d'Europe. En France, la **DNCG** contrôle aussi les comptes des clubs et peut interdire de recruter ou rétrograder un club." },
-    { k: /coupes? du monde (2026|2030|2034)|mondial (2026|2030|2034)|prochaine coupe du monde|prochain mondial/, t: "Les prochaines Coupes du monde", a:
-      "- **2026** : États-Unis, Canada et Mexique, première édition à **48 équipes** (104 matchs).\n- **2030** : Maroc, Espagne et Portugal (avec 3 matchs en Uruguay, Argentine et Paraguay pour le centenaire).\n- **2034** : Arabie saoudite.\n" +
-      "_Je n'ai pas le résultat de la Coupe du monde 2026 dans mes données._" },
+    { k: /coupes? du monde (2030|2034)|mondial (2030|2034)|prochaine coupe du monde|prochain mondial/, t: "Les prochaines Coupes du monde", a:
+      "- **2030** : Maroc, Espagne et Portugal (avec 3 matchs en Uruguay, Argentine et Paraguay pour le centenaire).\n- **2034** : Arabie saoudite.\n" +
+      "La dernière, en **2026** (États-Unis, Canada, Mexique, 1re à **48 équipes**), a été gagnée par l'**Espagne** : 1-0 a.p. contre l'Argentine en finale. Meilleur buteur : Kylian Mbappé (10 buts) ; meilleur joueur : Rodri ; la France a fini 4e." },
     { k: /feminin|feminine|football des femmes|equipe de france des femmes/, t: "Le football féminin", a:
       "**Coupe du monde féminine** : États-Unis (1991, 1999, 2015, 2019 : record, 4 titres), Norvège (1995), Allemagne (2003, 2007), Japon (2011), **Espagne (2023)**.\n" +
-      "**Ballon d'Or féminin** : Ada Hegerberg (2018), Megan Rapinoe (2019), Alexia Putellas (2021, 2022), **Aitana Bonmatí (2023, 2024, 2025)**.\n" +
+      "**Ballon d'Or féminin** : Ada Hegerberg (2018), Megan Rapinoe (2019), Alexia Putellas (2021, 2022, **2026**), Aitana Bonmatí (2023, 2024, 2025).\n" +
       "**Ligue des champions féminine** : record de l'**Olympique lyonnais (8 titres)** ; Arsenal l'a gagnée en 2025.\n" +
       "**Euro féminin** : l'Angleterre a gagné les éditions 2022 et 2025." },
 
@@ -391,12 +416,13 @@ const FOOT_KB = {
     { k: /equipe de france|les bleus|selection francaise|selectionneur|palmares de la france|deschamps/, t: "L'équipe de France", a:
       "**Palmarès des Bleus** :\n- 2 **Coupes du monde** : 1998 (3-0 contre le Brésil, doublé de Zidane) et 2018 (4-2 contre la Croatie) ; finaliste en 2006 et 2022.\n" +
       "- 2 **Euros** : 1984 (Platini) et 2000 ; finaliste en 2016.\n- 1 **Ligue des nations** (2021) et 2 Coupes des confédérations (2001, 2003).\n" +
-      "**Records** : meilleur buteur **Olivier Giroud (57 buts)**, devant Thierry Henry (51) ; joueur le plus capé **Hugo Lloris (145 sélections)**.\n" +
-      "**Sélectionneur** : Didier Deschamps depuis 2012, qui a annoncé son départ après la Coupe du monde 2026." },
+      "**Coupe du monde 2026** : 4e place (défaite 2-0 contre l'Espagne en demi-finale, puis contre l'Angleterre pour la 3e place) ; Mbappé meilleur buteur du tournoi avec 10 buts.\n" +
+      "**Records** : meilleur buteur **Kylian Mbappé (67 buts)**, devant Olivier Giroud (57) et Thierry Henry (51) ; joueur le plus capé **Hugo Lloris (145 sélections)**.\n" +
+      "**Sélectionneur** : **Zinedine Zidane**, qui a succédé à Didier Deschamps (2012-2026) après la Coupe du monde 2026." },
     { k: /\brecords?\b|le plus de buts|meilleur buteur de l histoire|meilleurs buteurs de l histoire|plus cape|plus de selections|plus de titres/, t: "Les grands records", a:
-      "- **Plus de buts en carrière (matchs officiels)** : Cristiano Ronaldo, plus de 900 buts (cap franchi en 2024).\n- **Plus de buts en sélection** : Cristiano Ronaldo (Portugal), record mondial.\n" +
+      "- **Plus de buts en carrière (matchs officiels)** : Cristiano Ronaldo, plus de 980 buts.\n- **Plus de buts en sélection** : Cristiano Ronaldo, 146 buts avec le Portugal (record mondial).\n" +
       "- **Plus de buts en une année civile** : Lionel Messi, 91 buts en 2012.\n- **Plus de buts en Coupe du monde** : Miroslav Klose (Allemagne), 16 ; en une seule édition : **Just Fontaine (France), 13 en 1958**.\n" +
-      "- **Plus de Coupes du monde gagnées** : Pelé (3, joueur) ; Brésil (5, pays).\n- **Plus de Ballons d'Or** : Lionel Messi (8).\n- **Plus de Ligues des champions** : Real Madrid (15, club) ; Ancelotti (5, entraîneur) ; Paco Gento (6, joueur), égalé par Modrić, Kroos, Carvajal et Nacho.\n" +
+      "- **Plus de Coupes du monde gagnées** : Pelé (3, joueur) ; Brésil (5, pays).\n- **Équipe de France** : Kylian Mbappé, meilleur buteur (67 buts).\n- **Plus de Ballons d'Or** : Lionel Messi (8).\n- **Plus de Ligues des champions** : Real Madrid (15, club) ; Ancelotti (5, entraîneur) ; Paco Gento (6, joueur), égalé par Modrić, Kroos, Carvajal et Nacho.\n" +
       "- **Meilleurs buteurs par championnat** : Ligue 1 Delio Onnis (299), Premier League Alan Shearer (260), Liga Lionel Messi (474), Serie A Silvio Piola (274), Bundesliga Gerd Müller (365).\n" +
       "- **Plus de buts en une saison** : Lewandowski 41 en Bundesliga (2020-21), Messi 50 en Liga (2011-12).\n- **Ligue des champions** : Cristiano Ronaldo, meilleur buteur de l'histoire (140 buts)." },
 
@@ -463,10 +489,10 @@ const FOOT_KB = {
     { n: "Diego Maradona", k: /\bmaradona\b|\bel pibe\b/, a: "**Diego Maradona** (1960-2020), Argentine. Champion du monde **1986**, avec la « main de Dieu » puis le « but du siècle » contre l'Angleterre en quart de finale. A offert à **Naples** ses deux premiers titres de champion d'Italie (1987, 1990) et une Coupe UEFA (1989). A aussi joué à Boca Juniors, Barcelone et Séville." },
     { n: "Johan Cruyff", k: /\bcruyff\b/, a: "**Johan Cruyff** (1947-2016), Pays-Bas. **3 Ballons d'Or** (1971, 1973, 1974), **3 Coupes des clubs champions** d'affilée avec l'**Ajax** (1971-1973), finaliste de la Coupe du monde 1974. Symbole du « football total ». Entraîneur, il crée la « Dream Team » du **Barça**, championne d'Europe en 1992, et inspire Guardiola." },
     { n: "Franz Beckenbauer", k: /\bbeckenbauer\b|\bkaiser\b/, a: "**Franz Beckenbauer** (1945-2024), Allemagne, « der Kaiser ». Libéro de génie, **champion du monde 1974** comme capitaine et **1990** comme sélectionneur, champion d'Europe 1972, **3 Coupes des clubs champions** avec le **Bayern** (1974-1976) et **2 Ballons d'Or** (1972, 1976)." },
-    { n: "Zinedine Zidane", k: /\bzidane\b|\bzizou\b/, a: "**Zinedine Zidane** (né en 1972), France. **Champion du monde 1998** (doublé de la tête en finale), **champion d'Europe 2000**, **Ballon d'Or 1998**. Vainqueur de la Ligue des champions **2002** avec le Real Madrid grâce à une volée mythique. Sa carrière de joueur se termine sur un coup de tête à Materazzi en finale 2006. Entraîneur du Real, il gagne **3 Ligues des champions d'affilée** (2016, 2017, 2018), un exploit unique." },
+    { n: "Zinedine Zidane", k: /\bzidane\b|\bzizou\b/, a: "**Zinedine Zidane** (né en 1972), France. **Champion du monde 1998** (doublé de la tête en finale), **champion d'Europe 2000**, **Ballon d'Or 1998**. Vainqueur de la Ligue des champions **2002** avec le Real Madrid grâce à une volée mythique. Sa carrière de joueur se termine sur un coup de tête à Materazzi en finale 2006. Entraîneur du Real, il gagne **3 Ligues des champions d'affilée** (2016, 2017, 2018), un exploit unique. **Sélectionneur de l'équipe de France** depuis 2026, après Didier Deschamps." },
     { n: "Michel Platini", k: /\bplatini\b/, a: "**Michel Platini** (né en 1955), France. **3 Ballons d'Or d'affilée** (1983, 1984, 1985), **champion d'Europe 1984** avec un record de 9 buts dans le tournoi. Star de **Nancy**, Saint-Étienne puis de la **Juventus** (Coupe des clubs champions 1985). Président de l'UEFA de 2007 à 2015." },
-    { n: "Lionel Messi", k: /\bmessi\b|\bla pulga\b/, a: "**Lionel Messi** (né en 1987), Argentine. Record de **8 Ballons d'Or**. **Champion du monde 2022**, Copa América 2021 et 2024. Au **FC Barcelone** (2004-2021) : 4 Ligues des champions, 10 Liga et le record de buts du club (672) et de la Liga (474). Puis PSG (2021-2023) et **Inter Miami** (depuis 2023)." },
-    { n: "Cristiano Ronaldo", k: /\bcristiano\b|\bcr7\b|\bronaldo\b(?! nazario)(?! bresilien)/, a: "**Cristiano Ronaldo** (né en 1985), Portugal. **5 Ballons d'Or**, **5 Ligues des champions** (1 avec Manchester United en 2008, 4 avec le Real Madrid), **champion d'Europe 2016** et vainqueur de la Ligue des nations 2019 et 2025. Meilleur buteur de l'histoire de la Ligue des champions et des sélections nationales. Joue à **Al-Nassr** (Arabie saoudite) depuis 2023.\n_(Tu parlais peut-être de **Ronaldo** le Brésilien ? Demande « Ronaldo Nazario ».)_" },
+    { n: "Lionel Messi", k: /\bmessi\b|\bla pulga\b/, a: "**Lionel Messi** (né en 1987), Argentine. Record de **8 Ballons d'Or**. **Champion du monde 2022**, Copa América 2021 et 2024. Au **FC Barcelone** (2004-2021) : 4 Ligues des champions, 10 Liga et le record de buts du club (672) et de la Liga (474). Puis PSG (2021-2023) et **Inter Miami** (depuis 2023). Finaliste de la Coupe du monde 2026 (Ballon d'argent), il a pris sa retraite internationale en octobre 2026." },
+    { n: "Cristiano Ronaldo", k: /\bcristiano\b|\bcr7\b|\bronaldo\b(?! nazario)(?! bresilien)/, a: "**Cristiano Ronaldo** (né en 1985), Portugal. **5 Ballons d'Or**, **5 Ligues des champions** (1 avec Manchester United en 2008, 4 avec le Real Madrid), **champion d'Europe 2016** et vainqueur de la Ligue des nations 2019 et 2025. Meilleur buteur de l'histoire de la Ligue des champions (140 buts) et des sélections nationales (146 buts). Joue à **Al-Nassr** (Arabie saoudite) depuis 2023 ; retraite internationale annoncée en novembre 2026.\n_(Tu parlais peut-être de **Ronaldo** le Brésilien ? Demande « Ronaldo Nazario ».)_" },
     { n: "Ronaldo (Nazário)", k: /\bronaldo nazario\b|\bronaldo bresilien\b|\bfenomeno\b|\br9\b/, a: "**Ronaldo Nazário** (né en 1976), Brésil, « Il Fenomeno ». **Champion du monde 1994 et 2002** (8 buts en 2002, dont un doublé en finale), **Ballon d'Or 1997 et 2002**. A joué au PSV, au Barça, à l'Inter, au Real Madrid et au Milan. Avant-centre parmi les plus spectaculaires de l'histoire." },
     { n: "Thierry Henry", k: /\bthierry henry\b|\btiti\b/, a: "**Thierry Henry** (né en 1977), France. **Champion du monde 1998**, **champion d'Europe 2000**, **meilleur buteur de l'histoire d'Arsenal** (228 buts), « Invincible » en 2003-2004, Ligue des champions 2009 avec Barcelone. 51 buts en équipe de France (record jusqu'à Giroud en 2022)." },
     { n: "Alfredo Di Stéfano", k: /\bdi stefano\b/, a: "**Alfredo Di Stéfano** (1926-2014), Argentine puis Espagne. Moteur du **Real Madrid** qui gagne les **5 premières Coupes des clubs champions** (1956-1960), buteur dans chacune de ces finales. **Ballon d'Or 1957 et 1959**." },
@@ -485,53 +511,53 @@ const FOOT_KB = {
     { n: "Luka Modrić", k: /\bmodric\b/, bioOnly: true, a: "**Luka Modrić** (né en 1985), Croatie. **Ballon d'Or 2018**, l'année où il mène la Croatie en **finale de la Coupe du monde**. **6 Ligues des champions** avec le **Real Madrid** (2012-2025), record partagé. Parti ensuite à l'AC Milan." },
 
     // Entraîneurs
-    { n: "Pep Guardiola", k: /\bguardiola\b|\bpep\b/, a: "**Pep Guardiola** (né en 1971), Espagne. Entraîneur du **FC Barcelone** (2008-2012 : 2 Ligues des champions, 3 Liga, triplé 2009), du **Bayern Munich** (2013-2016 : 3 Bundesliga) puis de **Manchester City** (depuis 2016 : 6 Premier League, dont 4 d'affilée de 2021 à 2024, et la **Ligue des champions 2023** avec un triplé). Père du jeu de position moderne." },
+    { n: "Pep Guardiola", k: /\bguardiola\b|\bpep\b/, a: "**Pep Guardiola** (né en 1971), Espagne. Entraîneur du **FC Barcelone** (2008-2012 : 2 Ligues des champions, 3 Liga, triplé 2009), du **Bayern Munich** (2013-2016 : 3 Bundesliga) puis de **Manchester City** (2016-2026 : 6 Premier League, dont 4 d'affilée de 2021 à 2024, et la **Ligue des champions 2023** avec un triplé). Il a quitté City en mai 2026. Père du jeu de position moderne." },
     { n: "Sir Alex Ferguson", k: /\bferguson\b/, a: "**Sir Alex Ferguson** (né en 1941), Écosse. Entraîneur de **Manchester United** pendant **27 ans** (1986-2013) : **13 titres de champion d'Angleterre**, **2 Ligues des champions** (1999 avec un triplé, 2008), 5 FA Cups. Avant cela, il avait gagné une Coupe des coupes avec Aberdeen (1983)." },
-    { n: "José Mourinho", k: /\bmourinho\b|\bspecial one\b/, a: "**José Mourinho** (né en 1963), Portugal, « The Special One ». **2 Ligues des champions** : avec **Porto** (2004) et l'**Inter Milan** (2010, triplé). Champion au Portugal, en Angleterre (3 fois avec **Chelsea**), en Italie et en Espagne (Real Madrid 2012). A aussi entraîné Manchester United, Tottenham, la Roma (Ligue Conférence 2022) et Fenerbahçe." },
+    { n: "José Mourinho", k: /\bmourinho\b|\bspecial one\b/, a: "**José Mourinho** (né en 1963), Portugal, « The Special One ». **2 Ligues des champions** : avec **Porto** (2004) et l'**Inter Milan** (2010, triplé). Champion au Portugal, en Angleterre (3 fois avec **Chelsea**), en Italie et en Espagne (Real Madrid 2012). A aussi entraîné Manchester United, Tottenham, la Roma (Ligue Conférence 2022), Fenerbahçe et Benfica. **Entraîneur du Real Madrid** depuis 2026 (son 2e passage)." },
     { n: "Carlo Ancelotti", k: /\bancelotti\b|\bcarletto\b/, a: "**Carlo Ancelotti** (né en 1959), Italie. **Record de 5 Ligues des champions** comme entraîneur : 2 avec le **Milan AC** (2003, 2007) et 3 avec le **Real Madrid** (2014, 2022, 2024). Seul entraîneur champion dans les **5 grands championnats** (Italie, Angleterre avec Chelsea, France avec le PSG, Allemagne avec le Bayern, Espagne avec le Real). Sélectionneur du **Brésil** depuis 2025." },
     { n: "Jürgen Klopp", k: /\bklopp\b/, a: "**Jürgen Klopp** (né en 1967), Allemagne. Champion d'Allemagne avec **Dortmund** (2011, 2012), puis entraîneur de **Liverpool** (2015-2024) : **Ligue des champions 2019** et le premier titre de champion d'Angleterre du club depuis 30 ans (**2020**). Inventeur du « gegenpressing » moderne." },
     { n: "Arsène Wenger", k: /\bwenger\b/, a: "**Arsène Wenger** (né en 1949), France. Entraîneur d'**Arsenal** pendant 22 ans (1996-2018) : **3 titres de champion** (1998, 2002, 2004) dont la saison des « **Invincibles** » (2003-2004, aucune défaite) et **7 FA Cups** (record). Avant, il avait été champion de France avec Monaco (1988)." },
-    { n: "Didier Deschamps", k: /\bdeschamps\b|\bdd\b/, a: "**Didier Deschamps** (né en 1968), France. Joueur : capitaine des Bleus **champions du monde 1998** et **d'Europe 2000**, vainqueur de la Ligue des champions avec Marseille (1993) et la Juventus (1996). Sélectionneur depuis 2012 : **champion du monde 2018**, finaliste de l'Euro 2016 et de la Coupe du monde 2022, Ligue des nations 2021. Il a annoncé son départ après la Coupe du monde 2026." },
-    { n: "Luis Enrique", k: /\bluis enrique\b/, a: "**Luis Enrique** (né en 1970), Espagne. Seul entraîneur à avoir réussi **deux triplés championnat-coupe-Ligue des champions** avec deux clubs différents : **FC Barcelone en 2015** et **PSG en 2025**, première Ligue des champions de l'histoire du PSG (5-0 contre l'Inter en finale)." },
+    { n: "Didier Deschamps", k: /\bdeschamps\b/, a: "**Didier Deschamps** (né en 1968), France. Joueur : capitaine des Bleus **champions du monde 1998** et **d'Europe 2000**, vainqueur de la Ligue des champions avec Marseille (1993) et la Juventus (1996). Sélectionneur de 2012 à 2026 : **champion du monde 2018**, finaliste de l'Euro 2016 et de la Coupe du monde 2022, Ligue des nations 2021, 4e de la Coupe du monde 2026. Zinedine Zidane lui a succédé." },
+    { n: "Luis Enrique", k: /\bluis enrique\b/, a: "**Luis Enrique** (né en 1970), Espagne. Seul entraîneur à avoir réussi **deux triplés championnat-coupe-Ligue des champions** avec deux clubs différents : **FC Barcelone en 2015** et **PSG en 2025** (5-0 contre l'Inter, 1re C1 du PSG). Il gagne une 2e Ligue des champions avec Paris en **2026** (aux tirs au but contre Arsenal)." },
   ],
 
   // ---------- Fiches des clubs ----------
   // Palmarès arrêtés à la fin de la saison 2024-2025.
   clubs: [
     // Ligue 1
-    { n: "Paris Saint-Germain", k: /\bpsg\b|\bparis saint germain\b|\bparis sg\b/, a: "**Paris Saint-Germain** (PSG) – Paris\n- Fondé en **1970**\n- Stade : **Parc des Princes**\n- Surnom : les Rouge et Bleu\n- Palmarès : **13 titres de champion de France** (record), **16 Coupes de France** (record), **1 Ligue des champions (2025, 5-0 contre l'Inter)**, 1 Coupe des coupes (1996). Triplé championnat-Coupe-C1 en 2025." },
-    { n: "Lille", k: /\blille\b|\blosc\b|\bdogues\b/, a: "**LOSC Lille** – Lille (stade à Villeneuve-d'Ascq)\n- Fondé en **1944**\n- Stade : **Decathlon Arena – Stade Pierre-Mauroy**\n- Surnom : les Dogues\n- Palmarès : **4 titres de champion de France** (1946, 1954, 2011, 2021), 6 Coupes de France." },
+    { n: "Paris Saint-Germain", k: /\bpsg\b|\bparis saint germain\b|\bparis sg\b/, a: "**Paris Saint-Germain** (PSG) – Paris\n- Fondé en **1970**\n- Stade : **Parc des Princes**\n- Surnom : les Rouge et Bleu\n- Palmarès : **14 titres de champion de France** (record), **16 Coupes de France** (record), **2 Ligues des champions** (2025, 5-0 contre l'Inter ; 2026, aux tirs au but contre Arsenal), 1 Coupe des coupes (1996). Triplé championnat-Coupe-C1 en 2025." },
+    { n: "Lille", k: /\blille\b|\blosc\b|\bdogues\b/, a: "**LOSC Lille** – Lille (stade à Villeneuve-d'Ascq)\n- Fondé en **1944**\n- Stade : **Decathlon Arena – Stade Pierre-Mauroy**\n- Surnom : les Dogues\n- Palmarès : **4 titres de champion de France** sous le nom LOSC (1946, 1954, 2011, 2021), 6 Coupes de France." },
     { n: "Paris FC", k: /\bparis fc\b|\bpfc\b/, a: "**Paris FC** – Paris\n- Fondé en **1969**\n- Stade : **Stade Jean-Bouin**\n- Le deuxième club de Paris, remonté en Ligue 1 en 2025, avec le soutien de la famille Arnault (LVMH)." },
-    { n: "Olympique de Marseille", k: /\bmarseille\b|\bl om\b|\bom\b|\bphoceens\b|\bolympique de marseille\b/, a: "**Olympique de Marseille** (OM) – Marseille\n- Fondé en **1899**\n- Stade : **Orange Vélodrome**\n- Surnom : les Phocéens\n- Palmarès : **9 titres de champion de France**, 10 Coupes de France, **1 Ligue des champions (1993)**, premier club français champion d'Europe. Devise : « Droit au but »." },
+    { n: "Olympique de Marseille", k: /\bmarseille\b|\bl om\b|\bom\b|\bphoceens\b|\bolympique de marseille\b/, a: "**Olympique de Marseille** (OM) – Marseille\n- Fondé en **1899**\n- Stade : **Orange Vélodrome**\n- Surnom : les Phocéens\n- Palmarès : **9 titres de champion de France** (10 en comptant le titre amateur de 1929), 10 Coupes de France, **1 Ligue des champions (1993)**, premier club français champion d'Europe. Devise : « Droit au but »." },
     { n: "Olympique lyonnais", k: /\blyon\b|\bl ol\b|\bol\b|\bolympique lyonnais\b|\bgones\b/, a: "**Olympique lyonnais** (OL) – Lyon (stade à Décines-Charpieu)\n- Fondé en **1950**\n- Stade : **Groupama Stadium**\n- Surnom : les Gones\n- Palmarès : **7 titres de champion de France d'affilée** (2002 à 2008, record à l'époque), 5 Coupes de France. Son équipe féminine a gagné 8 Ligues des champions (record)." },
     { n: "OGC Nice", k: /\bnice\b|\bogcn\b|\baiglons\b/, a: "**OGC Nice** – Nice\n- Fondé en **1904**\n- Stade : **Allianz Riviera**\n- Surnom : les Aiglons\n- Palmarès : **4 titres de champion de France** (1951, 1952, 1956, 1959), 3 Coupes de France." },
     { n: "AS Monaco", k: /\bmonaco\b|\basm\b|\bmonegasques\b/, a: "**AS Monaco** – Monaco\n- Fondé en **1924**\n- Stade : **Stade Louis-II**\n- Surnom : les Monégasques\n- Palmarès : **8 titres de champion de France** (dernier en 2017 avec Mbappé), 5 Coupes de France, finaliste de la Ligue des champions 2004." },
     { n: "Stade rennais", k: /\brennes\b|\bstade rennais\b|\bsrfc\b/, a: "**Stade rennais** – Rennes\n- Fondé en **1901**\n- Stade : **Roazhon Park**\n- Surnom : les Rouge et Noir\n- Palmarès : **3 Coupes de France** (1965, 1971, 2019). Propriété de la famille Pinault." },
     { n: "Stade brestois", k: /\bbrest\b|\bstade brestois\b|\bsb29\b/, a: "**Stade brestois 29** – Brest\n- Fondé en **1950**\n- Stade : **Stade Francis-Le Blé**\n- Exploit : 3e de Ligue 1 en 2024, puis première participation à la Ligue des champions (2024-2025), jusqu'aux barrages contre le PSG." },
     { n: "FC Lorient", k: /\blorient\b|\bmerlus\b|\bfcl\b/, a: "**FC Lorient** – Lorient\n- Fondé en **1926**\n- Stade : **Stade du Moustoir**\n- Surnom : les Merlus\n- Palmarès : **1 Coupe de France (2002)**." },
-    { n: "RC Lens", k: /\blens\b|\brcl\b|\bsang et or\b/, a: "**Racing Club de Lens** – Lens\n- Fondé en **1906**\n- Stade : **Stade Bollaert-Delelis**, réputé pour son ambiance\n- Surnom : les Sang et Or\n- Palmarès : **1 titre de champion de France (1998)**, 1 Coupe de la Ligue (1999). Vice-champion 2023." },
+    { n: "RC Lens", k: /\blens\b|\brcl\b|\bsang et or\b/, a: "**Racing Club de Lens** – Lens\n- Fondé en **1906**\n- Stade : **Stade Bollaert-Delelis**, réputé pour son ambiance\n- Surnom : les Sang et Or\n- Palmarès : **1 titre de champion de France (1998)**, **1 Coupe de France (2026**, 3-1 contre Nice), 1 Coupe de la Ligue (1999). Vice-champion 2023." },
     { n: "Toulouse FC", k: /\btoulouse\b|\btfc\b|\bteteu\b/, a: "**Toulouse FC** – Toulouse\n- Fondé en **1970** (le club actuel)\n- Stade : **Stadium de Toulouse**\n- Surnom : le Téfécé, les Violets\n- Palmarès : **1 Coupe de France (2023)**." },
     { n: "RC Strasbourg", k: /\bstrasbourg\b|\brcsa\b|\brcs\b/, a: "**Racing Club de Strasbourg Alsace** – Strasbourg\n- Fondé en **1906**\n- Stade : **Stade de la Meinau**\n- Palmarès : **1 titre de champion de France (1979)**, 3 Coupes de France, 4 Coupes de la Ligue." },
     { n: "AJ Auxerre", k: /\bauxerre\b|\baja\b/, a: "**AJ Auxerre** – Auxerre\n- Fondé en **1905**\n- Stade : **Stade de l'Abbé-Deschamps**\n- Palmarès : **1 titre de champion de France (1996**, doublé avec la Coupe de France), 4 Coupes de France. Club de **Guy Roux**, entraîneur pendant plus de 40 ans." },
-    { n: "Le Mans FC", k: /\ble mans\b/, a: "**Le Mans FC** – Le Mans\n- Stade : **MMArena**\n- Club qui a déjà connu la Ligue 1 dans les années 2000. Didier Drogba y a fait ses débuts professionnels, Gervinho y a été révélé." },
+    { n: "Le Mans FC", k: /\ble mans\b|\bdu mans\b/, a: "**Le Mans FC** – Le Mans\n- Stade : **Stade Marie-Marvingt** (ex-MMArena)\n- Club qui a déjà connu la Ligue 1 dans les années 2000. Didier Drogba y a fait ses débuts professionnels, Gervinho y a été révélé." },
     { n: "Angers SCO", k: /\bangers\b|\bsco\b/, a: "**Angers SCO** – Angers\n- Fondé en **1919**\n- Stade : **Stade Raymond-Kopa** (Kopa a débuté au club)\n- Palmarès : finaliste de la Coupe de France 1957 et 2017." },
     { n: "ES Troyes AC", k: /\btroyes\b|\bestac\b/, a: "**ES Troyes AC** (ESTAC) – Troyes\n- Fondé en **1986**\n- Stade : **Stade de l'Aube**\n- Vainqueur de la Coupe Intertoto 2001." },
-    { n: "Le Havre AC", k: /\ble havre\b|\bhac\b/, a: "**Le Havre AC** – Le Havre\n- Fondé en **1872** : **le plus ancien club de football de France**\n- Stade : **Stade Océane**\n- Palmarès : 1 Coupe de France (1959). Centre de formation réputé (Mahrez, Pogba, Mendy… y sont passés)." },
+    { n: "Le Havre AC", k: /\bhavre\b|\bhac\b/, a: "**Le Havre AC** – Le Havre\n- Fondé en **1872** : **le plus ancien club de football de France**\n- Stade : **Stade Océane**\n- Palmarès : 1 Coupe de France (1959). Centre de formation réputé (Mahrez, Pogba, Mendy… y sont passés)." },
     { n: "AS Saint-Étienne", k: /\bsaint etienne\b|\basse\b|\bverts\b/, a: "**AS Saint-Étienne** – Saint-Étienne\n- Fondé en **1919**\n- Stade : **Stade Geoffroy-Guichard** (« le Chaudron »)\n- Surnom : les Verts\n- Palmarès : **10 titres de champion de France** (2e club le plus titré), 6 Coupes de France, finaliste de la Coupe des clubs champions 1976 (les « poteaux carrés » de Glasgow)." },
-    { n: "FC Nantes", k: /\bnantes\b|\bcanaris\b/, a: "**FC Nantes** – Nantes\n- Fondé en **1943**\n- Stade : **Stade de la Beaujoire**\n- Surnom : les Canaris\n- Palmarès : **8 titres de champion de France**, 4 Coupes de France (dont 2022). Célèbre pour son « jeu à la nantaise »." },
+    { n: "FC Nantes", k: /\bnantes\b|\bcanaris\b/, a: "**FC Nantes** – Nantes\n- Fondé en **1943**\n- Stade : **Stade de la Beaujoire**\n- Surnom : les Canaris\n- Palmarès : **8 titres de champion de France**, 4 Coupes de France (dont 2022). Célèbre pour son « jeu à la nantaise ». Relégué en Ligue 2 en 2026." },
     { n: "Girondins de Bordeaux", k: /\bbordeaux\b|\bgirondins\b/, a: "**Girondins de Bordeaux** – Bordeaux\n- Fondé en **1881**\n- Stade : **Matmut Atlantique**\n- Palmarès : **6 titres de champion de France** (dernier en 2009), 4 Coupes de France. Le club a été relégué en National 2 en 2024 après de graves difficultés financières." },
 
     // Premier League
-    { n: "Arsenal", k: /\barsenal\b|\bgunners\b/, a: "**Arsenal** – Londres (nord)\n- Fondé en **1886**\n- Stade : **Emirates Stadium**\n- Surnom : les Gunners\n- Palmarès : **13 titres de champion d'Angleterre**, **14 FA Cups** (record). Saison des « **Invincibles** » en 2003-2004 avec Arsène Wenger (aucune défaite)." },
+    { n: "Arsenal", k: /\barsenal\b|\bgunners\b/, a: "**Arsenal** – Londres (nord)\n- Fondé en **1886**\n- Stade : **Emirates Stadium**\n- Surnom : les Gunners\n- Palmarès : **14 titres de champion d'Angleterre** (dernier en **2026**), **14 FA Cups** (record). Saison des « **Invincibles** » en 2003-2004 avec Arsène Wenger (aucune défaite). Finaliste de la Ligue des champions 2006 et 2026." },
     { n: "Brighton", k: /\bbrighton\b|\bseagulls\b/, a: "**Brighton & Hove Albion** – Brighton\n- Fondé en **1901**\n- Stade : **Amex Stadium**\n- Surnom : les Seagulls\n- Club réputé pour son recrutement malin ; première qualification européenne en 2023." },
-    { n: "Manchester City", k: /\bmanchester city\b|\bman city\b|\bcitizens\b/, a: "**Manchester City** – Manchester\n- Fondé en **1880**\n- Stade : **Etihad Stadium**\n- Surnom : les Citizens\n- Palmarès : **10 titres de champion d'Angleterre** (dont 4 d'affilée de 2021 à 2024, record), **1 Ligue des champions (2023**, avec un triplé). Entraîneur : Pep Guardiola depuis 2016." },
+    { n: "Manchester City", k: /\bmanchester city\b|\bman city\b|\bcitizens\b/, a: "**Manchester City** – Manchester\n- Fondé en **1880**\n- Stade : **Etihad Stadium**\n- Surnom : les Citizens\n- Palmarès : **10 titres de champion d'Angleterre** (dont 4 d'affilée de 2021 à 2024, record), **1 Ligue des champions (2023**, avec un triplé), FA Cup et Coupe de la Ligue 2026. Entraîneur de 2016 à 2026 : Pep Guardiola." },
     { n: "Liverpool", k: /\bliverpool\b|\blfc\b/, a: "**Liverpool FC** – Liverpool\n- Fondé en **1892**\n- Stade : **Anfield**\n- Surnom : les Reds\n- Hymne : « You'll Never Walk Alone »\n- Palmarès : **20 titres de champion d'Angleterre** (record partagé avec Manchester United, dernier en 2025), **6 Ligues des champions** (record anglais : 1977, 1978, 1981, 1984, 2005, 2019)." },
     { n: "Chelsea", k: /\bchelsea\b/, a: "**Chelsea FC** – Londres (ouest)\n- Fondé en **1905**\n- Stade : **Stamford Bridge**\n- Surnom : les Blues\n- Palmarès : **6 titres de champion d'Angleterre**, **2 Ligues des champions** (2012, 2021), Ligue Conférence 2025 et **Coupe du monde des clubs 2025** (3-0 contre le PSG)." },
     { n: "Everton", k: /\beverton\b|\btoffees\b/, a: "**Everton FC** – Liverpool\n- Fondé en **1878**\n- Stade : **Hill Dickinson Stadium** depuis 2025 (après 133 ans à Goodison Park)\n- Surnom : les Toffees\n- Palmarès : **9 titres de champion d'Angleterre**, 5 FA Cups, 1 Coupe des coupes (1985)." },
     { n: "Bournemouth", k: /\bbournemouth\b|\bcherries\b/, a: "**AFC Bournemouth** – Bournemouth\n- Fondé en **1899**\n- Stade : **Vitality Stadium** (Dean Court), l'un des plus petits de Premier League\n- Surnom : les Cherries." },
     { n: "Brentford", k: /\bbrentford\b|\bthe bees\b/, a: "**Brentford FC** – Londres (ouest)\n- Fondé en **1889**\n- Stade : **Gtech Community Stadium**\n- Surnom : les Bees\n- Club connu pour son utilisation des statistiques dans le recrutement." },
     { n: "Leeds United", k: /\bleeds\b/, a: "**Leeds United** – Leeds\n- Fondé en **1919**\n- Stade : **Elland Road**\n- Palmarès : **3 titres de champion d'Angleterre** (1969, 1974, 1992, ce dernier avec Éric Cantona), finaliste de la Coupe des clubs champions 1975." },
-    { n: "Aston Villa", k: /\baston villa\b|\bvillans\b/, a: "**Aston Villa** – Birmingham\n- Fondé en **1874**\n- Stade : **Villa Park**\n- Palmarès : **7 titres de champion d'Angleterre**, **1 Coupe des clubs champions (1982)**, 7 FA Cups." },
+    { n: "Aston Villa", k: /\baston villa\b|\bvillans\b/, a: "**Aston Villa** – Birmingham\n- Fondé en **1874**\n- Stade : **Villa Park**\n- Palmarès : **7 titres de champion d'Angleterre**, **1 Coupe des clubs champions (1982)**, 7 FA Cups, **Ligue Europa 2026** (3-0 contre Fribourg)." },
     { n: "Tottenham", k: /\btottenham\b|\bspurs\b/, a: "**Tottenham Hotspur** – Londres (nord)\n- Fondé en **1882**\n- Stade : **Tottenham Hotspur Stadium**\n- Surnom : les Spurs\n- Palmarès : **2 titres de champion** (1951, 1961), 8 FA Cups, 3 Coupes UEFA / Ligue Europa (1972, 1984, **2025**), finaliste de la Ligue des champions 2019." },
     { n: "Newcastle United", k: /\bnewcastle\b|\bmagpies\b/, a: "**Newcastle United** – Newcastle\n- Fondé en **1892**\n- Stade : **St James' Park**\n- Surnom : les Magpies\n- Palmarès : **4 titres de champion d'Angleterre** (le dernier en 1927), 6 FA Cups, **Coupe de la Ligue 2025** (1er trophée national depuis 1955)." },
     { n: "Hull City", k: /\bhull\b/, a: "**Hull City** – Hull\n- Fondé en **1904**\n- Stade : **MKM Stadium**\n- Surnom : les Tigers\n- Finaliste de la FA Cup 2014." },
@@ -541,14 +567,14 @@ const FOOT_KB = {
     { n: "Coventry City", k: /\bcoventry\b/, a: "**Coventry City** – Coventry\n- Fondé en **1883**\n- Stade : **Coventry Building Society Arena**\n- Surnom : les Sky Blues\n- Palmarès : 1 FA Cup (1987)." },
     { n: "Manchester United", k: /\bmanchester united\b|\bman united\b|\bman utd\b|\bred devils\b|\bmu\b/, a: "**Manchester United** – Manchester\n- Fondé en **1878**\n- Stade : **Old Trafford** (« le Théâtre des rêves »)\n- Surnom : les Red Devils\n- Palmarès : **20 titres de champion d'Angleterre**, 13 FA Cups, **3 Ligues des champions** (1968, 1999, 2008). 13 titres sous Sir Alex Ferguson (1986-2013)." },
     { n: "Sunderland", k: /\bsunderland\b|\bblack cats\b/, a: "**Sunderland AFC** – Sunderland\n- Fondé en **1879**\n- Stade : **Stadium of Light**\n- Surnom : les Black Cats\n- Palmarès : **6 titres de champion d'Angleterre** (le dernier en 1936), 2 FA Cups." },
-    { n: "Crystal Palace", k: /\bcrystal palace\b|\bpalace\b|\beagles\b/, a: "**Crystal Palace** – Londres (sud)\n- Fondé en **1905**\n- Stade : **Selhurst Park**\n- Surnom : les Eagles\n- Palmarès : **FA Cup 2025** (1-0 contre Manchester City), le premier trophée majeur de son histoire." },
+    { n: "Crystal Palace", k: /\bcrystal palace\b|\bpalace\b|\beagles\b/, a: "**Crystal Palace** – Londres (sud)\n- Fondé en **1905**\n- Stade : **Selhurst Park**\n- Surnom : les Eagles\n- Palmarès : **FA Cup 2025** (1-0 contre Manchester City), premier trophée majeur de son histoire, puis **Ligue Conférence 2026** (1-0 contre le Rayo Vallecano)." },
 
     // Liga
-    { n: "FC Barcelone", k: /\bbarca\b|\bbarcelone\b|\bbarcelona\b|\bblaugrana\b/, a: "**FC Barcelone** – Barcelone\n- Fondé en **1899**\n- Stade : **Camp Nou** (le plus grand stade d'Europe)\n- Surnom : le Barça, les Blaugrana\n- Devise : « Més que un club » (Plus qu'un club)\n- Palmarès : **28 titres de champion d'Espagne**, **32 Coupes du Roi** (record), **5 Ligues des champions** (1992, 2006, 2009, 2011, 2015). Messi y a passé 17 saisons." },
+    { n: "FC Barcelone", k: /\bbarca\b|\bbarcelone\b|\bbarcelona\b|\bblaugrana\b/, a: "**FC Barcelone** – Barcelone\n- Fondé en **1899**\n- Stade : **Spotify Camp Nou** (le plus grand stade d'Europe)\n- Surnom : le Barça, les Blaugrana\n- Devise : « Més que un club » (Plus qu'un club)\n- Palmarès : **29 titres de champion d'Espagne** (dont 2025 et 2026), **32 Coupes du Roi** (record), **5 Ligues des champions** (1992, 2006, 2009, 2011, 2015). Messi y a passé 17 saisons." },
     { n: "Real Madrid", k: /\breal madrid\b|\breal\b(?! sociedad| betis)|\bmerengues?\b/, a: "**Real Madrid** – Madrid\n- Fondé en **1902**\n- Stade : **Santiago Bernabéu**\n- Surnom : les Merengues\n- Palmarès : **36 titres de champion d'Espagne** (record), **15 Ligues des champions** (record absolu, dont les 5 premières de 1956 à 1960 et 3 d'affilée de 2016 à 2018)." },
-    { n: "Atlético Madrid", k: /\batletico\b|\batleti\b|\bcolchoneros\b/, a: "**Atlético Madrid** – Madrid\n- Fondé en **1903**\n- Stade : **Metropolitano**\n- Surnom : les Colchoneros\n- Palmarès : **11 titres de champion d'Espagne** (dernier en 2021), 3 Ligues Europa, finaliste de la Ligue des champions 1974, 2014 et 2016. Entraîneur emblématique : Diego Simeone (depuis 2011)." },
-    { n: "Real Betis", k: /\bbetis\b/, a: "**Real Betis** – Séville\n- Fondé en **1907**\n- Stade : **Benito Villamarín**\n- Palmarès : **1 titre de champion d'Espagne (1935)**, 3 Coupes du Roi (dont 2022), finaliste de la Ligue Conférence 2025." },
-    { n: "Real Sociedad", k: /\breal sociedad\b|\bla real\b/, a: "**Real Sociedad** – Saint-Sébastien (Pays basque)\n- Fondé en **1909**\n- Stade : **Reale Arena (Anoeta)**\n- Palmarès : **2 titres de champion d'Espagne** (1981, 1982), 3 Coupes du Roi (dont 2020)." },
+    { n: "Atlético Madrid", k: /\batletico\b|\batleti\b|\bcolchoneros\b/, a: "**Atlético Madrid** – Madrid\n- Fondé en **1903**\n- Stade : **Riyadh Air Metropolitano**\n- Surnom : les Colchoneros\n- Palmarès : **11 titres de champion d'Espagne** (dernier en 2021), 3 Ligues Europa, finaliste de la Ligue des champions 1974, 2014 et 2016. Entraîneur emblématique : Diego Simeone (depuis 2011)." },
+    { n: "Real Betis", k: /\bbetis\b/, a: "**Real Betis** – Séville\n- Fondé en **1907**\n- Stade : **Benito Villamarín** (en travaux : le club joue à l'Estadio de La Cartuja en attendant)\n- Palmarès : **1 titre de champion d'Espagne (1935)**, 3 Coupes du Roi (dont 2022), finaliste de la Ligue Conférence 2025." },
+    { n: "Real Sociedad", k: /\breal sociedad\b|\bla real\b/, a: "**Real Sociedad** – Saint-Sébastien (Pays basque)\n- Fondé en **1909**\n- Stade : **Reale Arena (Anoeta)**\n- Palmarès : **2 titres de champion d'Espagne** (1981, 1982), Coupes du Roi dont 2020 et **2026**." },
     { n: "Séville FC", k: /\bseville\b|\bsevilla\b/, a: "**Séville FC** – Séville\n- Fondé en **1890**\n- Stade : **Ramón Sánchez-Pizjuán**\n- Palmarès : **1 titre de champion d'Espagne (1946)**, et surtout **7 Coupes UEFA / Ligues Europa** (record : 2006, 2007, 2014, 2015, 2016, 2020, 2023)." },
     { n: "Athletic Bilbao", k: /\bathletic\b|\bbilbao\b/, a: "**Athletic Club** (Bilbao) – Bilbao (Pays basque)\n- Fondé en **1898**\n- Stade : **San Mamés**\n- Particularité : ne fait jouer que des **joueurs basques** ou formés au Pays basque\n- Palmarès : **8 titres de champion d'Espagne**, 24 Coupes du Roi (dont 2024). Avec le Real et le Barça, jamais relégué de Liga." },
     { n: "Villarreal", k: /\bvillarreal\b|\bsous marin jaune\b/, a: "**Villarreal CF** – Villarreal\n- Fondé en **1923**\n- Stade : **Estadio de la Cerámica**\n- Surnom : le « Sous-marin jaune »\n- Palmarès : **Ligue Europa 2021** (contre Manchester United aux tirs au but)." },
@@ -557,7 +583,7 @@ const FOOT_KB = {
     { n: "Celta Vigo", k: /\bcelta\b|\bvigo\b/, a: "**Celta de Vigo** – Vigo (Galice)\n- Fondé en **1923**\n- Stade : **Balaídos**\n- Demi-finaliste de la Ligue Europa 2017." },
     { n: "Alavés", k: /\balaves\b/, a: "**Deportivo Alavés** – Vitoria-Gasteiz (Pays basque)\n- Fondé en **1921**\n- Stade : **Mendizorroza**\n- Finaliste de la Coupe UEFA 2001, perdue 5-4 contre Liverpool au but en or." },
     { n: "Espanyol", k: /\bespanyol\b/, a: "**RCD Espanyol** – Barcelone (stade à Cornellà)\n- Fondé en **1900**\n- Stade : **RCDE Stadium**\n- Palmarès : 4 Coupes du Roi, finaliste de la Coupe UEFA 1988 et 2007." },
-    { n: "Rayo Vallecano", k: /\brayo\b|\bvallecano\b/, a: "**Rayo Vallecano** – Madrid (quartier de Vallecas)\n- Fondé en **1924**\n- Stade : **Estadio de Vallecas**\n- Club populaire de quartier, réputé pour ses supporters." },
+    { n: "Rayo Vallecano", k: /\brayo\b|\bvallecano\b/, a: "**Rayo Vallecano** – Madrid (quartier de Vallecas)\n- Fondé en **1924**\n- Stade : **Estadio de Vallecas**\n- Club populaire de quartier, réputé pour ses supporters. Finaliste de la Ligue Conférence 2026." },
     { n: "Getafe", k: /\bgetafe\b/, a: "**Getafe CF** – Getafe (banlieue de Madrid)\n- Fondé en **1983**\n- Stade : **Coliseum**\n- Finaliste de la Coupe du Roi 2007 et 2008." },
     { n: "Osasuna", k: /\bosasuna\b/, a: "**CA Osasuna** – Pampelune (Navarre)\n- Fondé en **1920**\n- Stade : **El Sadar**\n- Finaliste de la Coupe du Roi 2005 et 2023." },
     { n: "Levante", k: /\blevante\b/, a: "**Levante UD** – Valence\n- Fondé en **1909**\n- Stade : **Ciutat de València**\n- Le « petit » voisin du Valence CF." },
@@ -566,13 +592,13 @@ const FOOT_KB = {
     { n: "Málaga", k: /\bmalaga\b/, a: "**Málaga CF** – Málaga\n- Fondé en **1994** (successeur du CD Málaga)\n- Stade : **La Rosaleda**\n- Quart de finaliste de la Ligue des champions 2013." },
 
     // Bundesliga
-    { n: "Bayern Munich", k: /\bbayern\b|\bfcb munich\b/, a: "**FC Bayern Munich** – Munich\n- Fondé en **1900**\n- Stade : **Allianz Arena**\n- Palmarès : **34 titres de champion d'Allemagne** (record, dont 11 d'affilée de 2013 à 2023), **20 Coupes d'Allemagne** (record), **6 Ligues des champions** (1974, 1975, 1976, 2001, 2013, 2020). Triplés en 2013 et 2020." },
+    { n: "Bayern Munich", k: /\bbayern\b|\bfcb munich\b/, a: "**FC Bayern Munich** – Munich\n- Fondé en **1900**\n- Stade : **Allianz Arena**\n- Palmarès : **35 titres de champion d'Allemagne** (record, dont 11 d'affilée de 2013 à 2023), **21 Coupes d'Allemagne** (record), **6 Ligues des champions** (1974, 1975, 1976, 2001, 2013, 2020). Triplés en 2013 et 2020." },
     { n: "Borussia Dortmund", k: /\bdortmund\b|\bbvb\b|\bborussia dortmund\b/, a: "**Borussia Dortmund** – Dortmund\n- Fondé en **1909**\n- Stade : **Signal Iduna Park** (Westfalenstadion), le plus grand d'Allemagne, avec son « Mur jaune »\n- Palmarès : **8 titres de champion d'Allemagne**, 5 Coupes d'Allemagne, **1 Ligue des champions (1997)**, finaliste en 2013 et 2024." },
-    { n: "SC Fribourg", k: /\bfribourg\b|\bfreiburg\b/, a: "**SC Fribourg** – Fribourg-en-Brisgau\n- Fondé en **1904**\n- Stade : **Europa-Park Stadion**\n- Club réputé pour sa stabilité (Christian Streich entraîneur de 2011 à 2024)." },
+    { n: "SC Fribourg", k: /\bfribourg\b|\bfreiburg\b/, a: "**SC Fribourg** – Fribourg-en-Brisgau\n- Fondé en **1904**\n- Stade : **Europa-Park Stadion**\n- Club réputé pour sa stabilité (Christian Streich entraîneur de 2011 à 2024). Finaliste de la Ligue Europa 2026." },
     { n: "RB Leipzig", k: /\bleipzig\b|\brb leipzig\b/, a: "**RB Leipzig** – Leipzig\n- Fondé en **2009** (par Red Bull)\n- Stade : **Red Bull Arena**\n- Palmarès : **2 Coupes d'Allemagne** (2022, 2023). Demi-finaliste de la Ligue des champions 2020." },
     { n: "Bayer Leverkusen", k: /\bleverkusen\b|\bbayer\b|\bwerkself\b/, a: "**Bayer Leverkusen** – Leverkusen\n- Fondé en **1904** (club de l'entreprise Bayer)\n- Stade : **BayArena**\n- Palmarès : **1 titre de champion (2024), invaincu toute la saison** avec Xabi Alonso, 2 Coupes d'Allemagne (1993, 2024), Coupe UEFA 1988, finaliste de la Ligue des champions 2002." },
     { n: "Werder Brême", k: /\bwerder\b|\bbreme\b|\bbremen\b/, a: "**Werder Brême** – Brême\n- Fondé en **1899**\n- Stade : **Weserstadion**\n- Palmarès : **4 titres de champion d'Allemagne** (dernier en 2004), 6 Coupes d'Allemagne, 1 Coupe des coupes (1992)." },
-    { n: "SV Elversberg", k: /\belversberg\b/, a: "**SV Elversberg** – Spiesen-Elversberg (Sarre)\n- Fondé en **1907**\n- Un tout petit club de village, monté jusqu'en Bundesliga après plusieurs montées successives." },
+    { n: "SV Elversberg", k: /\belversberg\b/, a: "**SV Elversberg** – Spiesen-Elversberg (Sarre)\n- Fondé en **1907**\n- Stade : **Waldstadion an der Kaiserlinde**\n- Un tout petit club de village, monté jusqu'en Bundesliga après plusieurs montées successives." },
     { n: "VfB Stuttgart", k: /\bstuttgart\b|\bvfb\b/, a: "**VfB Stuttgart** – Stuttgart\n- Fondé en **1893**\n- Stade : **MHPArena**\n- Palmarès : **5 titres de champion d'Allemagne** (dernier en 2007), 4 Coupes d'Allemagne (dont **2025**). Vice-champion 2024." },
     { n: "TSG Hoffenheim", k: /\bhoffenheim\b/, a: "**TSG Hoffenheim** – Sinsheim\n- Fondé en **1899**\n- Stade : **PreZero Arena**\n- Club de village monté de la 5e division à la Bundesliga (2008) avec le soutien de Dietmar Hopp (SAP)." },
     { n: "Eintracht Francfort", k: /\bfrancfort\b|\bfrankfurt\b|\beintracht\b/, a: "**Eintracht Francfort** – Francfort\n- Fondé en **1899**\n- Stade : **Deutsche Bank Park** (Waldstadion)\n- Palmarès : **1 titre de champion (1959)**, 5 Coupes d'Allemagne, Coupe UEFA 1980 et **Ligue Europa 2022**. Finaliste de la Coupe des clubs champions 1960." },
@@ -587,7 +613,7 @@ const FOOT_KB = {
 
     // Serie A
     { n: "Lazio", k: /\blazio\b/, a: "**SS Lazio** – Rome\n- Fondé en **1900**\n- Stade : **Stadio Olimpico** (partagé avec l'AS Rome)\n- Surnom : les Biancocelesti\n- Palmarès : **2 titres de champion d'Italie** (1974, 2000), 7 Coupes d'Italie, 1 Coupe des coupes (1999)." },
-    { n: "Inter Milan", k: /\binter\b(?! miami)|\binternazionale\b|\bnerazzurri\b/, a: "**Inter Milan** – Milan\n- Fondé en **1908**\n- Stade : **San Siro (Giuseppe-Meazza)**, partagé avec le Milan AC\n- Surnom : les Nerazzurri\n- Palmarès : **20 titres de champion d'Italie** (2e étoile en 2024), 9 Coupes d'Italie, **3 Ligues des champions** (1964, 1965, 2010 avec un triplé). Seul club italien jamais relégué." },
+    { n: "Inter Milan", k: /\binter\b(?! miami)|\binternazionale\b|\bnerazzurri\b/, a: "**Inter Milan** – Milan\n- Fondé en **1908**\n- Stade : **San Siro (Giuseppe-Meazza)**, partagé avec le Milan AC\n- Surnom : les Nerazzurri\n- Palmarès : **21 titres de champion d'Italie** (dont 2026), 10 Coupes d'Italie (dont 2026), **3 Ligues des champions** (1964, 1965, 2010 avec un triplé). Seul club italien jamais relégué." },
     { n: "AS Rome", k: /\bas rome\b|\broma\b|\brome\b|\bgiallorossi\b/, a: "**AS Rome** – Rome\n- Fondé en **1927**\n- Stade : **Stadio Olimpico**\n- Surnom : les Giallorossi\n- Palmarès : **3 titres de champion d'Italie** (1942, 1983, 2001), 9 Coupes d'Italie, **Ligue Conférence 2022** avec Mourinho. Légende : Francesco Totti, 25 saisons au club." },
     { n: "AC Milan", k: /\bac milan\b|\bmilan ac\b|\brossoneri\b|(?<!inter )\bmilan\b/, a: "**AC Milan** – Milan\n- Fondé en **1899**\n- Stade : **San Siro (Giuseppe-Meazza)**\n- Surnom : les Rossoneri\n- Palmarès : **19 titres de champion d'Italie**, **7 Coupes des clubs champions / Ligues des champions** (2e après le Real Madrid : 1963, 1969, 1989, 1990, 1994, 2003, 2007)." },
     { n: "Côme", k: /\bcome\b|\bcomo\b/, a: "**Côme 1907** – Côme (au bord du lac de Côme)\n- Fondé en **1907**\n- Stade : **Stadio Giuseppe-Sinigaglia**\n- Remonté en Serie A en 2024, avec Cesc Fàbregas comme entraîneur." },
@@ -597,7 +623,7 @@ const FOOT_KB = {
     { n: "Cagliari", k: /\bcagliari\b/, a: "**Cagliari Calcio** – Cagliari (Sardaigne)\n- Fondé en **1920**\n- Stade : **Unipol Domus**\n- Palmarès : **1 titre de champion d'Italie (1970)**, avec la légende Gigi Riva." },
     { n: "Naples", k: /\bnaples\b|\bnapoli\b|\bpartenopei\b/, a: "**SSC Naples** – Naples\n- Fondé en **1926**\n- Stade : **Stadio Diego-Armando-Maradona**\n- Palmarès : **4 titres de champion d'Italie** (1987 et 1990 avec Maradona, 2023, 2025), 6 Coupes d'Italie, Coupe UEFA 1989." },
     { n: "Torino", k: /\btorino\b|\bgranata\b/, a: "**Torino FC** – Turin\n- Fondé en **1906**\n- Stade : **Stadio Olimpico Grande Torino**\n- Surnom : les Granata\n- Palmarès : **7 titres de champion d'Italie**. Le « Grande Torino », meilleure équipe des années 1940, a disparu dans l'accident d'avion de **Superga** en 1949." },
-    { n: "Atalanta", k: /\batalanta\b|\bbergame\b|\bdea\b/, a: "**Atalanta** – Bergame\n- Fondé en **1907**\n- Stade : **Gewiss Stadium**\n- Surnom : la Dea (la Déesse)\n- Palmarès : **Ligue Europa 2024** (3-0 contre Leverkusen), Coupe d'Italie 1963. Club transformé par Gian Piero Gasperini (2016-2025)." },
+    { n: "Atalanta", k: /\batalanta\b|\bbergame\b|\bdea\b/, a: "**Atalanta** – Bergame\n- Fondé en **1907**\n- Stade : **New Balance Arena** (ex-Gewiss Stadium)\n- Surnom : la Dea (la Déesse)\n- Palmarès : **Ligue Europa 2024** (3-0 contre Leverkusen), Coupe d'Italie 1963. Club transformé par Gian Piero Gasperini (2016-2025)." },
     { n: "Genoa", k: /\bgenes\b|\bgenoa\b/, a: "**Genoa CFC** – Gênes\n- Fondé en **1893** : **le plus ancien club de football d'Italie**\n- Stade : **Stadio Luigi-Ferraris**\n- Palmarès : **9 titres de champion d'Italie** (tous avant 1925)." },
     { n: "Lecce", k: /\blecce\b/, a: "**US Lecce** – Lecce (Pouilles)\n- Fondé en **1908**\n- Stade : **Stadio Via del Mare**." },
     { n: "Fiorentina", k: /\bfiorentina\b|\bviola\b|\bflorence\b/, a: "**ACF Fiorentina** – Florence\n- Fondé en **1926**\n- Stade : **Stadio Artemio-Franchi**\n- Surnom : la Viola\n- Palmarès : **2 titres de champion d'Italie** (1956, 1969), 6 Coupes d'Italie, Coupe des coupes 1961, finaliste de la Ligue Conférence 2023 et 2024." },

@@ -89,7 +89,8 @@ const EncycloBot = (() => {
         const final = KB.uclFinals[y];
         return `🏆 **Ligue des champions ${y - 1}-${String(y).slice(2)}** (finale ${y}) : **${row[1]}**.` + (final ? `\nFinale : ${final}.` : "");
       }
-      if (y > 2025) return "Je n'ai pas le résultat des finales après 2025 dans mes données (dernière : **PSG**, 5-0 contre l'Inter en 2025).";
+      const lastUcl = KB.ucl[KB.ucl.length - 1];
+      if (y > lastUcl[0]) return `Je n'ai pas encore la finale ${y} dans mes données (dernière enregistrée : ${lastUcl[0]}, gagnée par **${lastUcl[1]}**).`;
       return `La première Coupe des clubs champions date de 1956 (Real Madrid).`;
     }
     const club = Object.entries(KB.uclClubs).find(([, re]) => re.test(q));
@@ -105,7 +106,7 @@ const EncycloBot = (() => {
       ranking.filter(([, c]) => c >= 2).map(([n, c]) => `- **${n}** : ${c}`).join("\n") +
       `\n- 1 titre : ${ranking.filter(([, c]) => c === 1).map(([n]) => n).join(", ")}.\n\n` +
       `Derniers vainqueurs : ${KB.ucl.slice(-5).reverse().map(r => `${r[0]} ${r[1]}`).join(", ")}.\n` +
-      "_Clubs français vainqueurs : Marseille (1993) et PSG (2025)._";
+      "_Clubs français vainqueurs : Marseille (1993) et PSG (2025, 2026)._";
   }
 
   // ---------- Ballon d'Or ----------
@@ -116,13 +117,14 @@ const EncycloBot = (() => {
       if (y === 2020) return "Pas de Ballon d'Or en **2020** : il a été annulé à cause du Covid-19.";
       const row = KB.ballonDor.find(r => r[0] === y);
       if (row) return `🏅 **Ballon d'Or ${y}** : **${row[1]}** (${row[2]}, ${row[3]}).`;
-      if (y > 2025) return "Je n'ai pas le Ballon d'Or après 2025 dans mes données (2025 : **Ousmane Dembélé**, PSG).";
+      const lastBo = KB.ballonDor[KB.ballonDor.length - 1];
+      if (y > lastBo[0]) return `Je n'ai pas encore le Ballon d'Or ${y} dans mes données (dernier : ${lastBo[0]}, **${lastBo[1]}**).`;
       return "Le Ballon d'Or existe depuis 1956 (premier lauréat : Stanley Matthews).";
     }
     const who = Object.entries(KB.ballonDorNames).find(([, re]) => re.test(q));
     if (who) {
       const wins = countWins(KB.ballonDor, 1, who[0]).map(r => r[0]);
-      if (!wins.length) return `**${who[0]}** n'a jamais gagné le Ballon d'Or (dans mes données jusqu'en 2025).`;
+      if (!wins.length) return `**${who[0]}** n'a jamais gagné le Ballon d'Or (dans mes données jusqu'en 2026).`;
       return `**${who[0]}** a gagné **${plural(wins.length, "Ballon d'Or", "Ballons d'Or")}** : ${wins.join(", ")}.`;
     }
     if (/\bfrancais\b|\bfrance\b|\bbleus?\b/.test(q)) {
@@ -149,11 +151,11 @@ const EncycloBot = (() => {
       const season = `${y - 1}-${String(y).slice(2)}`;
       const row = lg.champions.find(c => c[0] === season);
       if (row) return `${lg.flag} **Champion de ${lg.name} ${season}** : **${row[1]}**.`;
-      return `Je n'ai le champion de ${lg.name} que pour les saisons 2015-16 à 2024-25.\n${lg.records}`;
+      return `Je n'ai le champion de ${lg.name} que pour les saisons ${lg.champions[0][0]} à ${lg.champions[lg.champions.length - 1][0]}.\n${lg.records}`;
     }
     return `${lg.flag} **${lg.name}**\n${lg.records}\n\nDerniers champions :\n` +
       lg.champions.slice().reverse().map(c => `- ${c[0]} : ${c[1]}`).join("\n") +
-      `\n\n_${lg.format}_\n_Le champion de la saison 2025-2026 n'est pas dans mes données ; pour la saison en cours, regarde l'onglet Classement._`;
+      `\n\n_${lg.format}_\n_Pour la saison en cours (2026-2027), regarde l'onglet Classement._`;
   }
 
   // ---------- Mots qui montrent l'intention ----------
